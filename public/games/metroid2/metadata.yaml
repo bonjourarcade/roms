@@ -1,0 +1,15 @@
+title: "Metroid II: Return of Samus"
+developer: Nintendo R&D1
+year: 1991
+genre: Adventure, Platform, Shooter
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-09-19
