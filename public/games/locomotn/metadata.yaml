@@ -2,17 +2,14 @@ title: Loco-Motion
 developer: Konami
 year: 1982
 genre: Puzzle, Strategy
-#controls:
-#  - 🕹️ Déplacer
-#  - 1️⃣  Tirer
-#  - 2️⃣  Bombe
+controls:
+  - 🕹️ Déplacer les tuiles
+  - 1️⃣  Accélérer le train
 
-#to_start: Insert Coin -> Start
+to_start: Insert Coin -> Start
 
 # Message d'annonce personnalisé pour la newsletter
 # Ce message apparaîtra en haut de l'email et des webhooks
 announcement_message: 
-
-hide: yes
 
 added: 2025-09-06
