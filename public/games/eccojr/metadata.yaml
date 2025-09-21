@@ -1,0 +1,15 @@
+title: Ecco Jr.
+developer: Appaloosa Interactive
+year: 1995
+genre: Education, Action, Adventure
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-09-20

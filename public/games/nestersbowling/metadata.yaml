@@ -1,0 +1,15 @@
+title: Nester's Funky Bowling
+developer: Saffire
+year: 1996
+genre: Sports
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-09-20
