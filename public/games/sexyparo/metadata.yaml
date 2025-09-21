@@ -1,7 +1,7 @@
-title: "Sonic 3D Blast: Director's Cut"
-developer: Jon Burton, Traveller's Tales
-year: 2017
-genre: Platform
+title: Sexy Parodius
+developer: Konami
+year: 1996
+genre: Shooter
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
@@ -12,4 +12,4 @@ genre: Platform
 enable_score: true
 hide: yes
 
-added: 2025-09-20
+added: 2025-09-21

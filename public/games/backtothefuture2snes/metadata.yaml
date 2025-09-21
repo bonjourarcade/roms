@@ -1,6 +1,6 @@
-title: "Sonic 3D Blast: Director's Cut"
-developer: Jon Burton, Traveller's Tales
-year: 2017
+title: Super Back to the Future Part II
+developer: Daft
+year: 1993
 genre: Platform
 #controls:
 #  - 🕹️ Déplacer
@@ -12,4 +12,4 @@ genre: Platform
 enable_score: true
 hide: yes
 
-added: 2025-09-20
+added: 2025-09-21
