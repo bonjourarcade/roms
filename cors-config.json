@@ -1,8 +1,8 @@
 [
     {
       "origin": ["https://bonjourarcade-f11f7f.gitlab.io", "https://bonjourarcade.github.io/bonjourarcade", "http://localhost:8000"],
-      "method": ["GET"],
-      "responseHeader": ["Content-Type"],
+      "method": ["GET", "HEAD", "POST"],
+      "responseHeader": ["Content-Type", "Authorization"],
       "maxAgeSeconds": 3600
     }
 ]
