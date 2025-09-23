@@ -382,7 +382,7 @@
     <!-- QR Code Container -->
     <div id="qr-code-container">
         <div id="qr-code"></div>
-        <p>Classements</p>
+        <p>Partage ton score !</p>
     </div>
 
     <!-- Help Button -->
@@ -543,7 +543,7 @@
 
             // QR Code generation logic
             const qrCodeContainer = document.getElementById('qr-code-container');
-            const leaderboardUrl = `https://alloarcade.web.app/leaderboards/${gameId}`;
+            const leaderboardUrl = `https://alloarcade.web.app/leaderboards/verify/${gameId}`;
 
             if (qrCodeContainer) {
                 if (!isMobileDevice()) {
