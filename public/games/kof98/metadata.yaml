@@ -1,0 +1,15 @@
+title: The Kinf of Fighters '98
+developer: SNK
+year: 1998
+genre: Fighting
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-09-25
