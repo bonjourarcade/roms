@@ -47,6 +47,7 @@ fi
 TOTAL_IMAGES=$(echo "$IMAGE_PATHS" | wc -l)
 PROCESSED_COUNT=0
 FAILED_COUNT=0
+FAILED_FILES=()
 
 echo "Found $TOTAL_IMAGES images to process..."
 
@@ -88,6 +89,7 @@ while IFS= read -r relative_path; do
 
     if [ ! -f "$full_image_path" ]; then
         FAILED_COUNT=$((FAILED_COUNT+1))
+        FAILED_FILES+=("$full_image_path (file not found)")
         PROCESSED_COUNT=$((PROCESSED_COUNT+1))
         update_progress $PROCESSED_COUNT $TOTAL_IMAGES
         continue
@@ -108,6 +110,7 @@ while IFS= read -r relative_path; do
         PROCESSED_COUNT=$((PROCESSED_COUNT+1))
     else
         FAILED_COUNT=$((FAILED_COUNT+1))
+        FAILED_FILES+=("$full_image_path (ImageMagick processing failed)")
     fi
     
     # Update progress bar
@@ -122,6 +125,11 @@ echo "Thumbnail generation complete. Processed: ${PROCESSED_COUNT}, Failed: ${FA
 
 if [ "$FAILED_COUNT" -gt 0 ]; then
     echo "⚠️  Thumbnail generation completed with ${FAILED_COUNT} failures."
+    echo ""
+    echo "Failed files:"
+    for failed_file in "${FAILED_FILES[@]}"; do
+        echo "  ❌ $failed_file"
+    done
     exit 1 # Indicate failure if any images failed to process
 else
     echo "✅ Thumbnail generation completed successfully!"
