@@ -1,5 +1,65 @@
 # les autres: voir Barcode Arcade dans docs job
 
+202513:
+  title: Vanguard
+  game_id: vanguard
+202514:
+  title: "Arkanoid: Doh It Again"
+  game_id: dohitagain
+202515:
+  title: Pac-Man
+  game_id: pacman
+202516:
+  title: Gyruss
+  game_id: gyruss
+202517:
+  title: Berzerk
+  game_id: berzerk
+202516:
+  title: Scramble
+  game_id: scramble
+202517:
+  title: "1943: The Battle of Midway"
+  game_id: 1943
+202518:
+  title: Pac-Man Championship Edition
+  game_id: pacmance
+202519:
+  title: Find Luigi
+  game_id: findluigi
+202520:
+  title: DoDonPachi
+  game_id: ddonpach
+202521:
+  title: Contra
+  game_id: contra
+202522:
+  title: Joust
+  game_id: joust
+202523:
+  title: Bubbles
+  game_id: bubbles
+202524:
+  title: Excitebike
+  game_id: excitebike
+202525:
+  title: Clu Clu Land
+  game_id: clucluland
+202526:
+  title: Kung Fu
+  game_id: kungfu
+202527:
+  title: "Ice Climber"
+  game_id: iceclimber
+202528:
+  title: "Chopper Command"
+  game_id: chopcom
+202529:
+  title: Batsugun
+  game_id: batsugun
+202530:
+  title: "R.C. Pro-AM"
+  game_id: rcproam
 202531: 
   title: "Pitfall II"
   game_id: "pitfall2"
