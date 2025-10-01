@@ -601,6 +601,66 @@ class NewsletterSender:
             print(f"❌ Error sending email: {e}")
             if hasattr(e, 'response') and e.response:
                 print(f"Response: {e.response.text}")
+                print(f"Response status: {e.response.status_code}")
+                print(f"Response headers: {dict(e.response.headers)}")
+                
+                # Additional debugging for 401 errors
+                if e.response.status_code == 401:
+                    print("\n🔍 401 Unauthorized Error Debug:")
+                    print("   This usually means the API secret is invalid or malformed.")
+                    print("   Common causes in CI/CD:")
+                    print("   1. Variable masking issues in GitLab")
+                    print("   2. Trailing whitespace/newlines")
+                    print("   3. Variable not properly substituted")
+                    print("   4. Wrong API secret (test vs production)")
+                    print(f"   Current API secret length: {len(self.api_secret)}")
+                    print(f"   API secret starts with: {self.api_secret[:4]}...")
+                    print(f"   API secret ends with: ...{self.api_secret[-4:]}")
+                    
+                    # Try to validate the API secret format
+                    if not self.api_secret.replace('_', '').isalnum():
+                        print("   ⚠️  API secret contains non-alphanumeric characters (except underscores)")
+                    if len(self.api_secret) < 20:
+                        print("   ⚠️  API secret seems too short")
+                    if len(self.api_secret) > 50:
+                        print("   ⚠️  API secret seems too long")
+            return False
+    
+    def test_api_credentials(self):
+        """Test ConvertKit API credentials by making a simple API call."""
+        print("🧪 Testing ConvertKit API credentials...")
+        
+        # Test with a simple API call to get account info
+        test_url = f'{self.api_url}/account'
+        headers = {'Content-Type': 'application/json'}
+        data = {'api_secret': self.api_secret}
+        
+        try:
+            response = requests.get(test_url, headers=headers, params=data, timeout=10)
+            
+            print(f"📡 API Test Response:")
+            print(f"   Status Code: {response.status_code}")
+            print(f"   Response Headers: {dict(response.headers)}")
+            
+            if response.status_code == 200:
+                print("✅ API credentials are valid!")
+                try:
+                    account_data = response.json()
+                    if 'account' in account_data:
+                        account = account_data['account']
+                        print(f"   Account Name: {account.get('name', 'N/A')}")
+                        print(f"   Account ID: {account.get('id', 'N/A')}")
+                        print(f"   Primary Email: {account.get('primary_email_address', 'N/A')}")
+                except:
+                    print("   (Could not parse account data)")
+                return True
+            else:
+                print(f"❌ API credentials test failed!")
+                print(f"   Response: {response.text}")
+                return False
+                
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Error testing API credentials: {e}")
             return False
     
     def send_webhook(self, content, game_id, meta, webhook_map_path=None, filter_label=None, custom_message=None, last_week_highlight=None):
@@ -819,6 +879,8 @@ def main():
                       help='Override the announcement message from metadata.yaml (appears at the top of the email and webhook)')
     parser.add_argument('--week-seed', default=None, type=str,
                       help='Specific week seed (YYYYWW format) to use instead of current week (useful for testing or past weeks)')
+    parser.add_argument('--test-api', action='store_true',
+                      help='Test API credentials without sending newsletter (useful for debugging authentication issues)')
     
     args = parser.parse_args()
 
@@ -829,6 +891,26 @@ def main():
     if not api_secret:
         print('❌ Error: API secret is required. Set CONVERTKIT_API_SECRET environment variable.')
         sys.exit(1)
+    
+    # Debug: Check API secret format (without exposing the actual secret)
+    print(f"🔍 API Secret Debug Info:")
+    print(f"   - Length: {len(api_secret)} characters")
+    print(f"   - Starts with: {api_secret[:4]}...")
+    print(f"   - Ends with: ...{api_secret[-4:]}")
+    print(f"   - Contains only alphanumeric chars: {api_secret.replace('_', '').isalnum()}")
+    print(f"   - Contains underscores: {'_' in api_secret}")
+    
+    # Check for common GitLab CI/CD issues
+    if api_secret.startswith('$'):
+        print("⚠️  WARNING: API secret appears to be a variable reference (starts with $)")
+        print("   This might indicate the environment variable wasn't properly substituted.")
+    if api_secret.endswith('\n') or api_secret.endswith('\r'):
+        print("⚠️  WARNING: API secret has trailing newline/carriage return")
+        print("   This can happen when copying from certain text editors.")
+        api_secret = api_secret.strip()
+    if ' ' in api_secret:
+        print("⚠️  WARNING: API secret contains spaces")
+        print("   This might indicate improper quoting in the CI/CD configuration.")
     
     # EARLY VALIDATION: Check if we have an announcement message and required metadata fields before any user interaction
     if not custom_message:
@@ -915,6 +997,17 @@ def main():
         webhook_only=args.webhook_only,
         week_seed=args.week_seed
     )
+    
+    # Handle API testing mode
+    if args.test_api:
+        print("🧪 API Testing Mode - Testing credentials only")
+        success = sender.test_api_credentials()
+        if success:
+            print("🎉 API credentials test passed!")
+            sys.exit(0)
+        else:
+            print("💥 API credentials test failed!")
+            sys.exit(1)
     
     # If selected_webhook_labels is set, send to each label in turn
     if selected_webhook_labels is not None:
