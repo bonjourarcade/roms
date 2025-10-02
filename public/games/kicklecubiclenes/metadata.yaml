@@ -1,17 +1,17 @@
-title: Kickle Cubicle
+title: Kickle Cubicle (NES)
 developer: Irem
 year: 1988
 genre: Puzzle, Cute
-#controls:
-#  - 🕹️ Déplacer
-#  - 1️⃣  Tirer
-#  - 2️⃣  Bombe
+controls:
+  - 🕹️ Déplacer
+  - 1️⃣  ??
+  - 2️⃣  ??
 
-#to_start: Insert Coin -> Start
+to_start: Start
 
 # Message d'annonce personnalisé pour la newsletter
 # Ce message apparaîtra en haut de l'email et des webhooks
-announcement_message: 
+announcement_message: "Entrez dans le monde enchanteur de Kickle Cubicle, un jeu de puzzle captivant d'Irem sorti en 1988 sur NES ! Dans cette aventure colorée, vous incarnez le brave Kickle, qui doit capturer des ennemis en les transformant en blocs de glace pour les utiliser stratégiquement et résoudre des énigmes délicates. Avec ses graphismes adorables et ses défis ingénieux, Kickle Cubicle vous promet des heures de réflexion amusante et un voyage mémorable dans un univers plein de charme !"
 
 hide: yes
 

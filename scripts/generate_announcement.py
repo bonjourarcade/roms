@@ -85,12 +85,22 @@ class AnnouncementGenerator:
             # Look up the game title for this seed
             try:
                 seed_int = int(seed)
-                game_title = predictions.get(seed_int)
+                game_data = predictions.get(seed_int)
             except ValueError:
-                game_title = predictions.get(seed)
+                game_data = predictions.get(seed)
+            
+            if not game_data:
+                print(f"❌ Error: No prediction found for seed {seed}")
+                sys.exit(1)
+            
+            # Extract title from the game data (could be dict or string)
+            if isinstance(game_data, dict):
+                game_title = game_data.get('title')
+            else:
+                game_title = game_data
             
             if not game_title:
-                print(f"❌ Error: No prediction found for seed {seed}")
+                print(f"❌ Error: No title found in prediction data for seed {seed}")
                 sys.exit(1)
             
             print(f"🎯 For seed {seed}, predicted game: {game_title}")
@@ -117,6 +127,8 @@ class AnnouncementGenerator:
                 all_games.append(gamelist['gameOfTheWeek'])
             if gamelist.get('previousGames'):
                 all_games.extend(gamelist['previousGames'])
+            if gamelist.get('games'):
+                all_games.extend(gamelist['games'])
             
             # Try exact match first
             for game in all_games:
@@ -350,7 +362,7 @@ Génère maintenant l'annonce pour {game_title} :"""
         print('✅ Metadata loaded')
         
         # Check if announcement already exists
-        existing_announcement = meta.get('announcement_message', '')
+        existing_announcement = meta.get('announcement_message', '') or ''
         if existing_announcement.strip():
             print(f"📝 Existing announcement found: {existing_announcement}")
             response = input("Do you want to replace it? (y/N): ").strip().lower()
