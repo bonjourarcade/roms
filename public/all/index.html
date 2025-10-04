@@ -601,6 +601,7 @@
     <div class="grid" id="gameGrid"></div>
 
     <script src="../assets/js/banner.js"></script>
+    <script src="../assets/js/utils.js"></script>
     <script>
         // Store all games data globally
         let gamesData = [];
@@ -766,6 +767,7 @@
                        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
                        .toLowerCase();
         }
+
 
         // Search functionality
         function filterGames(searchTerm) {
@@ -944,6 +946,9 @@
                 displayTitle = capitalizeFirst(game.id);
             }
             
+            // Normalize title for display (move "The" to the end)
+            displayTitle = normalizeTitleForSorting(displayTitle);
+            
             // Add problem indicator if the game has problems
             if (game.problem === "true") {
                 displayTitle += ' (❌)';
@@ -1021,16 +1026,26 @@
                             let titleB = b.title;
                             if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
                             if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
-                            return titleA.localeCompare(titleB);
+                            
+                            // Normalize titles for sorting (move "The" to end)
+                            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                            
+                            return normalizedA.localeCompare(normalizedB);
                         });
                     } else {
-                        // Default alphabetical
+                        // Default alphabetical (treating "The" as suffix)
                         games.sort((a, b) => {
                             let titleA = a.title;
                             let titleB = b.title;
                             if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
                             if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
-                            return titleA.localeCompare(titleB);
+                            
+                            // Normalize titles for sorting (move "The" to end)
+                            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                            
+                            return normalizedA.localeCompare(normalizedB);
                         });
                     }
                 }
@@ -1119,7 +1134,12 @@
                         if (!a.added && b.added) return 1;
                         let titleA = getDisplayTitle(a);
                         let titleB = getDisplayTitle(b);
-                        return titleA.localeCompare(titleB);
+                        
+                        // Normalize titles for sorting (move "The" to end)
+                        const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                        const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                        
+                        return normalizedA.localeCompare(normalizedB);
                     });
 
                     sorted.forEach(game => {
@@ -1218,11 +1238,16 @@
                         sectionContainer.style.marginBottom = '0.5rem';
                     }
                     
-                    // Sort games within each section alphabetically
+                    // Sort games within each section alphabetically (treating "The" as suffix)
                     gamesByLetter[letter].sort((a, b) => {
                         let titleA = getDisplayTitle(a);
                         let titleB = getDisplayTitle(b);
-                        return titleA.localeCompare(titleB);
+                        
+                        // Normalize titles for sorting (move "The" to end)
+                        const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                        const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                        
+                        return normalizedA.localeCompare(normalizedB);
                     });
                     
                     // Render games in this section

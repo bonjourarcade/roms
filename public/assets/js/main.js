@@ -134,6 +134,7 @@ function removeAccents(text) {
                .toLowerCase();
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
     // This function starts the process when the HTML page is fully loaded
     fetchGameData();
@@ -208,14 +209,19 @@ async function fetchGameData() {
         // Store all games globally for filtering purposes
         window.allGamesData = allGames;
 
-        // Sort allGames alphabetically by display title
+        // Sort allGames alphabetically by display title (treating "The" as suffix)
         allGames.sort((a, b) => {
             // Use the same display logic as in the UI
             let titleA = a.title;
             if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
             let titleB = b.title;
             if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
-            return titleA.toLowerCase().localeCompare(titleB.toLowerCase());
+            
+            // Normalize titles for sorting (move "The" to end)
+            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+            
+            return normalizedA.localeCompare(normalizedB);
         });
 
         populatePreviousGames(allGames);
@@ -247,6 +253,8 @@ async function fetchGameData() {
                     if (!displayTitle || displayTitle === game.id) {
                         displayTitle = capitalizeFirst(game.id);
                     }
+                    // Normalize title for display (move "The" to the end)
+                    displayTitle = normalizeTitleForSorting(displayTitle);
                     // Use accent-insensitive search
                     return removeAccents(displayTitle).includes(removeAccents(searchTerm));
                 });
@@ -315,6 +323,8 @@ async function fetchGameData() {
                         if (!displayTitle || displayTitle === game.id) {
                             displayTitle = capitalizeFirst(game.id);
                         }
+                        // Normalize title for display (move "The" to the end)
+                        displayTitle = normalizeTitleForSorting(displayTitle);
                         // Use accent-insensitive search
                         return removeAccents(displayTitle).includes(removeAccents(searchTerm));
                     });
@@ -356,6 +366,8 @@ async function fetchGameData() {
                             if (!displayTitle || displayTitle === game.id) {
                                 displayTitle = capitalizeFirst(game.id);
                             }
+                            // Normalize title for display (move "The" to the end)
+                            displayTitle = normalizeTitleForSorting(displayTitle);
                             // Use accent-insensitive search
                             return removeAccents(displayTitle).includes(removeAccents(searchTerm));
                         });
@@ -422,6 +434,9 @@ function populateFeaturedGame(game) {
     if (!displayTitle || displayTitle === game.id) {
         displayTitle = capitalizeFirst(game.id);
     }
+    
+    // Normalize title for display (move "The" to the end)
+    displayTitle = normalizeTitleForSorting(displayTitle);
     
     // Add problem indicator if the game has problems
     if (game.problem === "true") {
@@ -559,6 +574,9 @@ function updateSocialMediaMetaTags(game) {
     if (!displayTitle || displayTitle === game.id) {
         displayTitle = capitalizeFirst(game.id);
     }
+    
+    // Normalize title for display (move "The" to the end)
+    displayTitle = normalizeTitleForSorting(displayTitle);
 
     // Create description with game info
     let description = `Jouer à ${displayTitle}`;
@@ -694,6 +712,10 @@ function populatePreviousGames(games) {
         if (!displayTitle || displayTitle === game.id) {
             displayTitle = capitalizeFirst(game.id);
         }
+        
+        // Normalize title for display (move "The" to the end)
+        displayTitle = normalizeTitleForSorting(displayTitle);
+        
         title.textContent = displayTitle;
 
         link.appendChild(img);
