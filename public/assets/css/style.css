@@ -278,26 +278,93 @@ body.theme-dark {
 footer {
     text-align: center;
     margin-top: auto;
-    padding: 6px 0 3px 0;
+    padding: 15px 0 10px 0; /* Padding plus généreux */
     background: var(--background) !important;
     border-radius: 0 !important;
     border: none !important;
     box-shadow: none !important;
     font-size: 1.1em;
     color: var(--text-color);
-    min-height: 32px;
+    min-height: auto; /* Supprimer la contrainte de hauteur minimale */
 }
 .footer-emoji-link {
     text-decoration: none;
-    font-size: 1.5em;
-    transition: transform 0.12s, filter 0.12s;
+    font-size: 1.8em; /* Police plus grande */
+    transition: transform 0.2s ease-in-out;
     display: inline-block;
     vertical-align: middle;
+    padding: 12px 18px; /* Padding plus généreux */
+    margin: 8px 6px; /* Espacement entre les éléments */
+    border-radius: 8px; /* Coins arrondis pour un look moderne */
 }
 .footer-emoji-link:hover, .footer-emoji-link:focus {
-    transform: scale(1.18) rotate(-8deg);
-    filter: drop-shadow(0 2px 6px #ff0a);
+    animation: headBounce 0.6s ease-in-out infinite;
     outline: none;
+}
+
+@keyframes headBounce {
+    0%, 100% { 
+        transform: scale(1.2) rotate(0deg); 
+    }
+    25% { 
+        transform: scale(1.2) rotate(-8deg); 
+    }
+    75% { 
+        transform: scale(1.2) rotate(8deg); 
+    }
+}
+
+/* Footer layout improvements */
+.footer-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.footer-disclaimer {
+    margin-top: 18px; /* Réduire l'écart */
+    font-size: 0.9em; /* Police légèrement plus grande */
+    opacity: 0.75; /* Légèrement moins transparent */
+    text-align: center;
+    padding: 8px 0; /* Ajouter du padding pour équilibrer */
+}
+
+.footer-disclaimer a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.footer-disclaimer a:hover {
+    text-decoration: underline;
+}
+
+.disclaimer-row {
+    margin-top: 8px !important; /* Réduire encore plus l'écart */
+}
+
+.footer-disclaimer-text {
+    font-size: 0.9em;
+    opacity: 0.75;
+    color: var(--text-color);
+}
+
+.footer-disclaimer-text a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.footer-disclaimer-text a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .footer-row {
+        gap: 20px;
+        margin-bottom: 12px;
+    }
 }
 
 /* Header Flex Layout */
