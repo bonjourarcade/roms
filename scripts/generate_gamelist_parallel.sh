@@ -167,7 +167,6 @@ for i in $(seq 1 $BATCH_WORKERS); do
                 games_dir="$GAMES_DIR"
                 default_cover="$DEFAULT_COVER"
                 launcher_page="$LAUNCHER_PAGE"
-                featured_game_id="$FEATURED_GAME_ID"
                 use_local_paths="$USE_LOCAL_PATHS"
                 
                 # Process each ROM file in the batch
@@ -421,6 +420,135 @@ for game_file in $GAME_FILES; do
     fi
 done
 
+echo -e "${BLUE}🔍 Scanning for external games...${NC}"
+EXTERNAL_GAMES_COUNT=0
+
+# Scan games directory for external games (games starting with external-)
+for game_dir in "$GAMES_DIR"/external-*; do
+    [ ! -d "$game_dir" ] && continue
+    
+    game_id=$(basename "$game_dir")
+    metadata_file="${game_dir}/metadata.yaml"
+    
+    # Check if metadata file exists
+    if [ ! -f "$metadata_file" ]; then
+        echo -e "${YELLOW}⚠️  No metadata.yaml found for external game: $game_id${NC}"
+        continue
+    fi
+    
+    # Parse metadata
+    metadata_json=$(yq '.' "$metadata_file" 2>/dev/null || echo "INVALID_YAML")
+    if [ "$metadata_json" != "INVALID_YAML" ] && echo "$metadata_json" | jq -e . > /dev/null 2>&1; then
+        game_type=$(echo "$metadata_json" | jq -r '.game_type // ""')
+        
+        # Only process actual external games
+        if [ "$game_type" != "external" ]; then
+            continue
+        fi
+        
+        title=$(echo "$metadata_json" | jq -r '.title // ""')
+        developer=$(echo "$metadata_json" | jq -r '.developer // ""')
+        year=$(echo "$metadata_json" | jq -r '.year // ""')
+        genre=$(echo "$metadata_json" | jq -r '.genre // ""')
+        recommended=$(echo "$metadata_json" | jq -r '.recommended // ""')
+        added=$(echo "$metadata_json" | jq -r '.added // ""')
+        hide=$(echo "$metadata_json" | jq -r '.hide // ""')
+        enable_score=$(echo "$metadata_json" | jq -r '.enable_score // false')
+        to_start=$(echo "$metadata_json" | jq -r '.to_start // ""')
+        problem=$(echo "$metadata_json" | jq -r '.problem // ""')
+        controls_json=$(echo "$metadata_json" | jq -c '.controls // null')
+        new_flag=$(echo "$metadata_json" | jq -r '.new // empty')
+        announcement_message=$(echo "$metadata_json" | jq -r '.announcement_message // ""')
+        external_url=$(echo "$metadata_json" | jq -r '.external_url // ""')
+        launch_button_text=$(echo "$metadata_json" | jq -r '.launch_button_text // "Play Game"')
+        launch_button_url=$(echo "$metadata_json" | jq -r '.launch_button_url // ""')
+        
+        # Skip hidden games or games without required field
+        if [ "$hide" = "yes" ] || [ -z "$title" ] || [ -z "$external_url" ]; then
+            continue
+        fi
+        
+        echo -e "${BLUE}📄 Processing external game: $game_id${NC}"
+        EXTERNAL_GAMES_COUNT=$((EXTERNAL_GAMES_COUNT + 1))
+        
+        # Set core to external
+        core="external"
+        
+        # Determine cover art
+        cover_art_abs="/$DEFAULT_COVER"
+        expected_cover_file="${game_dir}/cover.png"
+        if [ -f "$expected_cover_file" ]; then
+            cover_art_abs="/games/$game_id/cover.png"
+        fi
+        
+        # Use external URL as page URL for external games
+        page_url="$external_url"
+        if [ -n "$launch_button_url" ] && [ "$launch_button_url" != "$external_url" ]; then
+            page_url="$launch_button_url"
+        fi
+        
+        # Check if game should be marked as new by date
+        is_new_by_date=""
+        if [ -n "$added" ] && [ "$added" != "DATE_PLACEHOLDER" ]; then
+            added_epoch=$(date -j -f "%Y-%m-%d" "$added" +%s 2>/dev/null || date -d "$added" +%s 2>/dev/null)
+            now_epoch=$(date +%s)
+            if [ -n "$added_epoch" ]; then
+                diff_days=$(( (now_epoch - added_epoch) / 86400 ))
+                if [ "$diff_days" -lt 7 ]; then
+                    is_new_by_date="true"
+                fi
+            fi
+        fi
+        
+        # Determine final new_flag
+        if [ "$new_flag" = "true" ] || [ "$is_new_by_date" = "true" ]; then
+            new_flag="true"
+        else
+            new_flag=""
+        fi
+        
+        # Create JSON object for external game
+        game_json=$(jq -n \
+            --arg id "$game_id" \
+            --arg title "${title:-$game_id}" \
+            --arg json_problem "$problem" \
+            --arg developer "$developer" \
+            --arg year "$year" \
+            --arg genre "$genre" \
+            --arg recommended "$recommended" \
+            --arg added "$added" \
+            --arg hide "$hide" \
+            --arg coverArt "$cover_art_abs" \
+            --arg pageUrl "$page_url" \
+            --arg core "${core:-null}" \
+            --arg romPath "" \
+            --arg saveState "" \
+            --argjson enable_score "$enable_score" \
+            --argjson controls "$controls_json" \
+            --arg to_start "$to_start" \
+            --arg new_flag "$new_flag" \
+            --arg announcement_message "$announcement_message" \
+            --arg external_url "$external_url" \
+            --arg launch_button_text "$launch_button_text" \
+            --arg launch_button_url "$launch_button_url" \
+            --arg game_type "$game_type" \
+            '{id: $id, title: $title, problem: $json_problem, developer: $developer, year: $year, genre: $genre, recommended: $recommended, added: $added, hide: $hide, coverArt: $coverArt, pageUrl: $pageUrl, core: $core, romPath: $romPath, saveState: $saveState, enable_score: $enable_score, controls: $controls, to_start: $to_start, new_flag: $new_flag, announcement_message: $announcement_message, external_url: $external_url, launch_button_text: $launch_button_text, launch_button_url: $launch_button_url, game_type: $game_type}' 2>/dev/null || echo "{}")
+        
+        # Add to the games array
+        if echo "$game_json" | jq -e . >/dev/null 2>&1 && [ "$game_json" != "{}" ] && [ "$game_json" != "null" ]; then
+            if [ "$first_game" = false ]; then
+                echo "," >> "$TEMP_DIR/processed_games.json"
+            fi
+            echo "$game_json" >> "$TEMP_DIR/processed_games.json"
+            first_game=false
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Invalid metadata.yaml for external game: $game_id${NC}"
+    fi
+done
+
+echo -e "${GREEN}✅ Found and processed $EXTERNAL_GAMES_COUNT external games${NC}"
+
 # Close the JSON array
 echo "]" >> "$TEMP_DIR/processed_games.json"
 
@@ -490,14 +618,11 @@ fi
 # Clean up only if successful
 rm -rf "$TEMP_DIR"
 
-# Final check for featured game
-if [ -n "$FEATURED_GAME_ID" ]; then
-    featured_id_check=$(jq -r '.gameOfTheWeek.id' "$OUTPUT_FILE")
-    if [ "$featured_id_check" = "null" ] || [ "$featured_id_check" != "$FEATURED_GAME_ID" ]; then
-        echo -e "${YELLOW}⚠️  Warning: Featured game '$FEATURED_GAME_ID' was not found or processed correctly.${NC}"
-    fi
+# Final check for current game
+if [ "$CURRENT_GAME_ID" != "no-game" ]; then
+    echo -e "${GREEN}✅ Current week's game set: $CURRENT_GAME_ID${NC}"
 else
-    echo -e "${YELLOW}⚠️  No featured game was set for this week.${NC}"
+    echo -e "${YELLOW}⚠️  No current game found for this week.${NC}"
 fi
 
 echo -e "${GREEN}✅ Parallel gamelist generation completed successfully!${NC}"

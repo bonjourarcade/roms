@@ -888,6 +888,36 @@ body.theme-dark #game-of-the-week.game-item--selected {
     pointer-events: none;
 }
 
+/* External games styling */
+.game-external {
+    border: 2.5px solid #4CAF50 !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1), 0 2px 8px rgba(76, 175, 80, 0.3);
+    position: relative;
+}
+
+.game-external::after {
+    content: "🌐";
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    font-size: 1.2em;
+    opacity: 0.8;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Dark theme for external games */
+body.theme-dark .game-external {
+    border: 2.5px solid #66BB6A !important;
+    box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.1), 0 2px 8px rgba(102, 187, 106, 0.3);
+}
+
+/* Light theme for external games */
+body.theme-light .game-external {
+    border: 2.5px solid #4CAF50 !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1), 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
 .featured-game-new {
     border: 4px solid #ff9800 !important;
     box-shadow: 0 0 0 5px #fff8, 0 4px 24px #ff980088;

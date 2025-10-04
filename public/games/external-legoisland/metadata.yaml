@@ -1,0 +1,15 @@
+title: Lego Island
+developer: Mindscape
+year: 1997
+genre: Action, Adventure
+core: external
+game_type: external
+external_url: https://isle.pizza
+launch_button_text: "Play Now!"
+launch_button_url: "https://isle.pizza"
+description: |
+  Bienvenue sur l'île Lego!
+enable_score: false
+hide: yes
+added: 2025-01-15
+new_flag: false

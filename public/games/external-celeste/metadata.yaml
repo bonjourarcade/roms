@@ -1,0 +1,18 @@
+title: Celeste
+developer: Maddy Makes Games
+year: 2018
+genre: Platformer
+core: external
+game_type: external
+external_url: https://www.celestegame.com
+launch_button_text: "Play on Official Site"
+launch_button_url: "https://maddymakesgamesinc.itch.io/celesteclassic"
+description: |
+  Celeste is a super-tight platformer about climbing a mountain. 
+  Help Madeline survive her journey to the top of Celeste Mountain in this 
+  acclaimed indie masterpiece featuring tight controls, beautiful pixel art, 
+  and an inspiring story.
+enable_score: false
+hide: yes
+added: 2025-01-15
+new_flag: false

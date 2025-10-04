@@ -20,7 +20,8 @@ function getSystemName(core) {
         'segaMS': 'Sega Master System',
         'snes': 'Super Nintendo',
         'vb': 'Virtual Boy',
-        'ws': 'WonderSwan'
+        'ws': 'WonderSwan',
+        'external': 'External Game'
     };
     return systemMap[core] || core;
 }
@@ -304,14 +305,15 @@ async function fetchGameData() {
             randomBtn.onclick = () => {
                 // Get current search term to determine which games to randomize from
                 const searchInput = document.getElementById('game-id-input');
-                let gamesToRandomizeFrom = visibleGames;
+                // Always exclude external games from random selection
+                let gamesToRandomizeFrom = visibleGames.filter(game => game.core !== 'external');
                 
                 if (searchInput && searchInput.value.trim()) {
                     const searchTerm = searchInput.value.toLowerCase();
-                    // Check for exact id match first (accent-insensitive)
-                    const exactMatch = visibleGames.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
+                    // Check for exact id match first (accent-insensitive) - but exclude external games
+                    const exactMatch = gamesToRandomizeFrom.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
                     if (exactMatch) {
-                        // If exact match exists, just go to that game
+                        // If exact match exists, just go to that game (no external games in pool)
                         addGameToHistory(exactMatch.id);
                         window.location.href = exactMatch.pageUrl;
                         return;
@@ -339,8 +341,15 @@ async function fetchGameData() {
                 const randomIdx = Math.floor(Math.random() * gamesToRandomizeFrom.length);
                 const randomGame = gamesToRandomizeFrom[randomIdx];
                 if (randomGame && randomGame.pageUrl) {
-                    addGameToHistory(randomGame.id);
-                    window.location.href = randomGame.pageUrl;
+                    // Handle external games differently
+                    if (randomGame.core === 'external') {
+                        // For external games, open in new tab/window
+                        window.open(randomGame.pageUrl, '_blank');
+                    } else {
+                        // Track game in history and navigate for regular games
+                        addGameToHistory(randomGame.id);
+                        window.location.href = randomGame.pageUrl;
+                    }
                 }
             };
             
@@ -349,12 +358,13 @@ async function fetchGameData() {
                 const infoText = document.querySelector('.random-info-text');
                 if (infoText) {
                     const searchInput = document.getElementById('game-id-input');
-                    let gamesToRandomizeFrom = visibleGames;
+                    // Always exclude external games from random selection count
+                    let gamesToRandomizeFrom = visibleGames.filter(game => game.core !== 'external');
                     
                     if (searchInput && searchInput.value.trim()) {
                         const searchTerm = searchInput.value.toLowerCase();
-                        // Check for exact id match first (accent-insensitive)
-                        const exactMatch = visibleGames.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
+                        // Check for exact id match first (accent-insensitive) - but exclude external games
+                        const exactMatch = gamesToRandomizeFrom.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
                         if (exactMatch) {
                             infoText.textContent = `Respecte votre recherche actuelle (1 jeu exact)`;
                             return;
@@ -475,6 +485,22 @@ function populateFeaturedGame(game) {
         badge.style.left = '7px';
         gameLink.classList.add('featured-game-new');
         gameLink.appendChild(badge);
+    }
+    
+    // Add external game styling if it's an external game
+    if (game.game_type === 'external' || game.core === 'external') {
+        gameLink.classList.add('game-external');
+        // Add external link indicator
+        const externalIndicator = document.createElement('span');
+        externalIndicator.innerHTML = '🌐';
+        externalIndicator.style.position = 'absolute';
+        externalIndicator.style.top = '7px';
+        externalIndicator.style.right = '7px';
+        externalIndicator.style.fontSize = '1.2em';
+        externalIndicator.style.opacity = '0.8';
+        externalIndicator.style.zIndex = '2';
+        externalIndicator.style.pointerEvents = 'none';
+        gameLink.appendChild(externalIndicator);
     }
 
     contentContainer.appendChild(gameLink); // Add linked game image
@@ -671,6 +697,11 @@ function populatePreviousGames(games) {
         // Add new border if new_flag is true
         if (game.new_flag === 'true') {
             gameItem.classList.add('game-new');
+        }
+        
+        // Add external game styling if it's an external game
+        if (game.game_type === 'external' || game.core === 'external') {
+            gameItem.classList.add('game-external');
         }
 
         const link = document.createElement('a');
@@ -977,12 +1008,28 @@ function handleGameClick(element) {
 
     // After animation and sound, navigate
     setTimeout(() => {
-        // Track game in history before navigating
-        const gameId = extractGameIdFromUrl(targetUrl);
-        if (gameId) {
-            addGameToHistory(gameId);
+        // Check if this is an external game by looking at the game data
+        let gameData = null;
+        if (element._gameData) {
+            gameData = element._gameData;
+        } else if (element.dataset.gameId) {
+            // Try to find game data from the games array
+            const games = window.games || [];
+            gameData = games.find(g => g.id === element.dataset.gameId);
         }
-        window.location.href = targetUrl;
+        
+        // Handle external games differently
+        if (gameData && gameData.core === 'external') {
+            // For external games, open in new tab/window
+            window.open(targetUrl, '_blank');
+        } else {
+            // Track game in history before navigating for regular games
+            const gameId = extractGameIdFromUrl(targetUrl);
+            if (gameId) {
+                addGameToHistory(gameId);
+            }
+            window.location.href = targetUrl;
+        }
     }, 700);
 }
 
@@ -1189,12 +1236,28 @@ function handleGameClick(element) {
 
         // After animation and sound, navigate
         setTimeout(() => {
-            // Track game in history before navigating
-            const gameId = extractGameIdFromUrl(targetUrl);
-            if (gameId) {
-                addGameToHistory(gameId);
+            // Check if this is an external game by looking at the game data
+            let gameData = null;
+            if (selectedEl._gameData) {
+                gameData = selectedEl._gameData;
+            } else if (selectedEl.dataset.gameId) {
+                // Try to find game data from the games array
+                const games = window.games || [];
+                gameData = games.find(g => g.id === selectedEl.dataset.gameId);
             }
-            window.location.href = targetUrl;
+            
+            // Handle external games differently
+            if (gameData && gameData.core === 'external') {
+                // For external games, open in new tab/window
+                window.open(targetUrl, '_blank');
+            } else {
+                // Track game in history before navigating for regular games
+                const gameId = extractGameIdFromUrl(targetUrl);
+                if (gameId) {
+                    addGameToHistory(gameId);
+                }
+                window.location.href = targetUrl;
+            }
         }, 700);
     }
 

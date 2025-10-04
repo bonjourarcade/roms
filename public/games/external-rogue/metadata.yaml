@@ -1,0 +1,15 @@
+title: Rogue
+developer: A.I. Design
+year: 1980
+genre: Roguelike
+core: external
+game_type: external
+external_url: /rogue
+launch_button_text: "Play Now!"
+launch_button_url: "/rogue"
+description: |
+  Le jeu qui a défini un nouveau genre : les roguelikes.
+enable_score: true
+hide: yes
+added: 2025-01-15
+new_flag: false
