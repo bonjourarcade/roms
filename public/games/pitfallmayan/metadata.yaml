@@ -1,7 +1,7 @@
-title: Bad Dudes Vs. DragonNinja
-developer: Data East
-year: 1988
-genre: Beat 'em up
+title: "Pitfall: The Mayan Adventure"
+developer: 
+year: 
+genre: 
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
@@ -9,6 +9,7 @@ genre: Beat 'em up
 
 #to_start: Insert Coin -> Start
 
+enable_score: true
 hide: yes
 
-added: 2025-08-03
+added: 2025-10-04
