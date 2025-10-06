@@ -2,7 +2,16 @@
 <head>
   <meta charset="UTF-8">
 </head>
-<a href="https://ko-fi.com/bonjourarcade" target="_blank">
-  <img src="/ads/kofi.png" style="max-width: 100%; height: auto;" />
-</a>
+<script>
+  // Génère un nombre aléatoire entre 1 et 10
+  const randomNumber = Math.floor(Math.random() * 10) + 1;
+  
+  // Si c'est 1 (donc 1 fois sur 10), affiche hint.svg
+  if (randomNumber === 1) {
+    document.write('<img src="/ads/hint.png" style="max-width: 100%; height: auto;" />');
+  } else {
+    // Sinon, affiche la vraie pub
+    document.write('<a href="https://ko-fi.com/bonjourarcade" target="_blank"><img src="/ads/kofi.png" style="max-width: 100%; height: auto;" /></a>');
+  }
+</script>
 
