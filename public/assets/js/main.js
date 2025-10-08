@@ -173,7 +173,8 @@ async function fetchGameData() {
 
         // Use local gamelist.json for development, Google Cloud Storage for production
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const gamelistUrl = isLocalhost ? 'gamelist.json' : 'https://storage.googleapis.com/bonjourarcade/gamelist.json';
+        const cacheBuster = '?v=' + Date.now();
+        const gamelistUrl = isLocalhost ? 'gamelist.json' + cacheBuster : 'https://storage.googleapis.com/bonjourarcade/gamelist.json' + cacheBuster;
         const response = await fetch(gamelistUrl);
 
         if (!response.ok) {
