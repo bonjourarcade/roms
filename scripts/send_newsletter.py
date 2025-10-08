@@ -511,44 +511,31 @@ class NewsletterSender:
         <h1 style="color:#333;text-align:center;margin-bottom:30px;">🎮 Annonce du jeu de la semaine!</h1>
         
         <div style="background:#f0f8ff;border:2px solid #007bff;border-radius:8px;padding:20px;margin:20px 0;">
-            <h2 style="color:#007bff;margin-top:0;">🎯 Jeu de la semaine : {clean_title}</h2>
+            <h2 style="color:#007bff;margin-top:0;text-align:center;">🎯 Jeu de la semaine : {clean_title}</h2>
             
             <!-- Description du jeu -->
-            <div style="margin-bottom:20px;font-size:1.1em;line-height:1.6;">
+            <div style="margin-bottom:20px;font-size:1.1em;line-height:1.6;text-align:center;">
                 {announcement_message}
             </div>
             
-            <!-- Layout responsive en deux colonnes -->
-            <div style="display:flex;flex-direction:row;gap:20px;align-items:flex-start;">
-                <div style="flex:1;min-width:0;">
-                    <ul style="margin:0;padding-left:20px;font-size:1.1em;">
-                        <li><b>Développeur :</b> {developer}</li>
-                        <li><b>Année :</b> {year}</li>
-                        <li><b>Genre :</b> {genre}</li>
-                        <li><b>Contrôles :</b> {controls}</li>
-                    </ul>
-                </div>
-                <div style="flex:1;min-width:0;text-align:center;">
-                    <img src="{cover_url}" alt="Cover de {clean_title}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
-                </div>
-            </div>
-            
-            <!-- Media query pour mobile -->
-            <style>
-                @media (max-width: 600px) {{
-                    .game-section {{
-                        flex-direction: column !important;
-                    }}
-                    .game-section > div {{
-                        flex: none !important;
-                        width: 100% !important;
-                        margin-bottom: 15px;
-                    }}
-                    .game-section > div:last-child {{
-                        margin-bottom: 0;
-                    }}
-                }}
-            </style>
+            <!-- Bloc infos + vignette centré (table pour compat email) -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                <tr>
+                    <td align="center" valign="top" style="width:50%;padding:0 10px;">
+                        <div style="text-align:center;">
+                            <ul style="display:inline-block;margin:0 auto;padding:0;text-align:left;font-size:1.1em;list-style-position:outside;">
+                                <li style="margin:6px 0;"><b>Développeur :</b> {developer}</li>
+                                <li style="margin:6px 0;"><b>Année :</b> {year}</li>
+                                <li style="margin:6px 0;"><b>Genre :</b> {genre}</li>
+                                <li style="margin:6px 0;"><b>Contrôles :</b> {controls}</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td align="center" valign="top" style="width:50%;padding:0 10px;">
+                        <img src="{cover_url}" alt="Cover de {clean_title}" style="display:block;max-width:320px;width:100%;height:auto;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+                    </td>
+                </tr>
+            </table>
         </div>
         
         <div style="text-align:center;margin:30px 0;">
