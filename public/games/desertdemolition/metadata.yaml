@@ -1,0 +1,14 @@
+title: Desert Demolition Starring Road Runner and Wile E. Coyote
+developer: BlueSky Software
+year: 1995
+genre: Platform
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+
+added: 2025-10-12

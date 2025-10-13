@@ -1014,14 +1014,17 @@
                 } else {
                     if (sortSelect && sortSelect.value === 'latest') {
                         // Sort by added date (newest first)
+                        // Treat missing `added` metadata as most recent
                         games.sort((a, b) => {
-                            if (a.added && b.added) {
+                            const aHas = !!a.added;
+                            const bHas = !!b.added;
+                            if (aHas && bHas) {
                                 const dateA = new Date(a.added);
                                 const dateB = new Date(b.added);
                                 return dateB - dateA;
                             }
-                            if (a.added && !b.added) return -1;
-                            if (!a.added && b.added) return 1;
+                            if (!aHas && bHas) return -1; // a missing -> treat as newer
+                            if (aHas && !bHas) return 1;  // b missing -> treat as newer
                             let titleA = a.title;
                             let titleB = b.title;
                             if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
@@ -1125,13 +1128,16 @@
                     }
 
                     const sorted = [...games].sort((a, b) => {
-                        if (a.added && b.added) {
+                        // Treat missing `added` metadata as most recent
+                        const aHas = !!a.added;
+                        const bHas = !!b.added;
+                        if (aHas && bHas) {
                             const dateA = new Date(a.added);
                             const dateB = new Date(b.added);
                             return dateB - dateA;
                         }
-                        if (a.added && !b.added) return -1;
-                        if (!a.added && b.added) return 1;
+                        if (!aHas && bHas) return -1; // a missing -> newer
+                        if (aHas && !bHas) return 1;  // b missing -> newer
                         let titleA = getDisplayTitle(a);
                         let titleB = getDisplayTitle(b);
                         
