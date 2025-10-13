@@ -570,6 +570,7 @@
                         }
                     };
                 } else {
+                    console.log('[leaderboard] fetching scores for', gameId, 'from alloarcade');
                     const response = await fetch('https://us-central1-alloarcade.cloudfunctions.net/listGameScores', {
                         method: 'POST',
                         headers: {
@@ -582,11 +583,22 @@
                         })
                     });
 
+                    console.log('[leaderboard] response status for', gameId, response.status, response.statusText);
                     if (!response.ok) {
+                        // Try to get response text for debugging
+                        let respText = '';
+                        try { respText = await response.text(); } catch (e) { /* ignore */ }
+                        console.error('[leaderboard] non-ok response:', response.status, respText);
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
 
-                    data = await response.json();
+                    try {
+                        data = await response.json();
+                        console.log('[leaderboard] got data for', gameId, data && data.result && data.result.success);
+                    } catch (e) {
+                        console.error('[leaderboard] failed to parse JSON for', gameId, e);
+                        throw e;
+                    }
                 }
                 
                 if (!data.result || !data.result.success || !data.result.scores) {
