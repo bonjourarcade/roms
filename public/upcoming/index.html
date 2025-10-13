@@ -99,6 +99,67 @@
             color: #388e3c;
         }
         
+        .upcoming-game-leaderboard {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .leaderboard-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 0.8rem;
+        }
+        
+        .leaderboard-rank {
+            font-size: 0.9rem;
+            margin-right: 6px;
+        }
+        
+        .leaderboard-player {
+            flex: 1;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .leaderboard-score {
+            color: #28a745;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        
+        .leaderboard-loading {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        
+        .leaderboard-empty {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        
+        .leaderboard-error {
+            text-align: center;
+            color: #dc3545;
+            font-size: 0.8rem;
+        }
+        
         .upcoming-game-week {
             font-size: 0.9rem;
             color: #666;
@@ -211,6 +272,32 @@
         .theme-dark .upcoming-game-info .genre {
             background: #1b5e20;
             color: #a5d6a7;
+        }
+        
+        .theme-dark .upcoming-game-leaderboard {
+            background: #3d3d3d;
+            border-color: #555;
+        }
+        
+        .theme-dark .leaderboard-title {
+            color: #e0e0e0;
+        }
+        
+        .theme-dark .leaderboard-player {
+            color: #e0e0e0;
+        }
+        
+        .theme-dark .leaderboard-score {
+            color: #4caf50;
+        }
+        
+        .theme-dark .leaderboard-loading,
+        .theme-dark .leaderboard-empty {
+            color: #aaa;
+        }
+        
+        .theme-dark .leaderboard-error {
+            color: #f44336;
         }
     </style>
 </head>
@@ -444,7 +531,8 @@
                         pageUrl: gameData.pageUrl || `/play?game=${prediction.game_id}`,
                         developer: gameData.developer,
                         year: gameData.year,
-                        genre: gameData.genre
+                        genre: gameData.genre,
+                        enable_score: gameData.enable_score
                     };
                 } else {
                     // Fallback if game data not found
@@ -454,10 +542,116 @@
                         pageUrl: `/play?game=${prediction.game_id}`,
                         developer: '',
                         year: '',
-                        genre: ''
+                        genre: '',
+                        enable_score: true
                     };
                 }
             });
+        }
+
+        async function fetchLeaderboardData(gameId) {
+            try {
+                // Check if we're on localhost and use mock data
+                const isLocalhost = window.location.hostname === 'localhost' || 
+                                  window.location.hostname === '127.0.0.1' || 
+                                  window.location.hostname.includes('localhost');
+                
+                let data;
+                
+                if (isLocalhost) {
+                    // Use mock data for localhost
+                    data = {
+                        result: {
+                            success: true,
+                            scores: generateMockScores(gameId)
+                        }
+                    };
+                } else {
+                    const response = await fetch('https://us-central1-alloarcade.cloudfunctions.net/listGameScores', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'origin': 'https://alloarcade.web.app',
+                            'referer': 'https://alloarcade.web.app/',
+                        },
+                        body: JSON.stringify({
+                            gameId: gameId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    data = await response.json();
+                }
+                
+                if (!data.result || !data.result.success || !data.result.scores) {
+                    return null;
+                }
+
+                // Get best score for each unique player
+                const playerBestScores = new Map();
+                
+                data.result.scores.forEach(score => {
+                    const userId = score.userId;
+                    const currentBest = playerBestScores.get(userId);
+                    
+                    if (!currentBest || score.score > currentBest.score) {
+                        playerBestScores.set(userId, {
+                            player: score.player,
+                            score: score.score,
+                            rank: score.rank
+                        });
+                    }
+                });
+
+                // Convert to array and sort by score (highest first)
+                const sortedScores = Array.from(playerBestScores.values())
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3); // Show top 3 players for upcoming page
+
+                return sortedScores;
+            } catch (error) {
+                console.error('Error fetching leaderboard for', gameId, ':', error);
+                return null;
+            }
+        }
+
+        function generateMockScores(gameId) {
+            const mockPlayers = [
+                { name: "Félix L", userId: "user1" },
+                { name: "Marie C", userId: "user2" },
+                { name: "Jean P", userId: "user3" },
+                { name: "Sophie M", userId: "user4" },
+                { name: "Pierre D", userId: "user5" }
+            ];
+
+            // Generate different score ranges based on game type
+            let baseScore = 1000;
+            if (gameId.includes('shmup') || gameId.includes('shoot')) {
+                baseScore = 50000;
+            } else if (gameId.includes('puzzle')) {
+                baseScore = 5000;
+            } else if (gameId.includes('platform')) {
+                baseScore = 15000;
+            }
+
+            return mockPlayers.map((player, index) => ({
+                rank: index + 1,
+                id: `mock_${player.userId}_${Date.now()}`,
+                userId: player.userId,
+                player: player.name,
+                photoURL: `https://via.placeholder.com/96/cccccc/666666?text=${player.name.charAt(0)}`,
+                score: Math.floor(baseScore * (1 + Math.random() * 5) * (1 - index * 0.1)),
+                game: gameId,
+                date: {
+                    _seconds: Math.floor(Date.now() / 1000) - Math.floor(Math.random() * 86400 * 30),
+                    _nanoseconds: Math.floor(Math.random() * 1000000000)
+                },
+                verified: true,
+                screenshotUrl: `https://via.placeholder.com/300x200/333333/ffffff?text=Screenshot`
+            }));
         }
 
         function getCurrentWeek() {
@@ -487,7 +681,7 @@
             });
         }
 
-        function displayUpcomingGames(games) {
+        async function displayUpcomingGames(games) {
             const loadingMessage = document.getElementById('loading-message');
             const gamesGrid = document.getElementById('upcoming-games-grid');
             
@@ -504,13 +698,15 @@
                 `;
             } else {
                 gamesGrid.style.display = 'grid';
+                
+                // Display games first, then load leaderboards
                 gamesGrid.innerHTML = games.map(game => {
                     const weekFormatted = formatWeek(game.week);
                     const coverSrc = getThumbnailSrc(game.coverArt);
                     const gameInfo = getGameInfo(game);
                     
                     return `
-                        <div class="upcoming-game-card" onclick="handleGameClick(this)">
+                        <div class="upcoming-game-card" onclick="handleGameClick(this)" data-game-id="${game.game_id}">
                             <a href="${game.pageUrl}" style="text-decoration: none; color: inherit;">
                                 <div class="upcoming-game-image">
                                     <img src="${coverSrc}" alt="${game.title}" loading="lazy">
@@ -518,11 +714,58 @@
                                 <div class="upcoming-game-week">Semaine ${weekFormatted}</div>
                                 <div class="upcoming-game-title">${game.title}</div>
                                 ${gameInfo}
+                                <div class="upcoming-game-leaderboard" id="leaderboard-${game.game_id}">
+                                    <div class="leaderboard-loading">Chargement des scores...</div>
+                                </div>
                                 <div class="upcoming-game-id">ID: ${game.game_id}</div>
                             </a>
                         </div>
                     `;
                 }).join('');
+                
+                // Load leaderboards for each game
+                for (const game of games) {
+                    if (game.enable_score !== false && game.enable_score !== "false") {
+                        await loadGameLeaderboard(game.game_id);
+                    } else {
+                        // Hide leaderboard for games with disabled scoring
+                        const leaderboardElement = document.getElementById(`leaderboard-${game.game_id}`);
+                        if (leaderboardElement) {
+                            leaderboardElement.style.display = 'none';
+                        }
+                    }
+                }
+            }
+        }
+
+        async function loadGameLeaderboard(gameId) {
+            const leaderboardElement = document.getElementById(`leaderboard-${gameId}`);
+            if (!leaderboardElement) return;
+
+            try {
+                const scores = await fetchLeaderboardData(gameId);
+                
+                if (!scores || scores.length === 0) {
+                    leaderboardElement.innerHTML = '<div class="leaderboard-empty">Aucun score</div>';
+                    return;
+                }
+
+                let leaderboardHTML = '<div class="leaderboard-title">🏆 Top scores</div>';
+                scores.forEach((score, index) => {
+                    const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+                    leaderboardHTML += `
+                        <div class="leaderboard-entry">
+                            <span class="leaderboard-rank">${rankEmoji}</span>
+                            <span class="leaderboard-player">${score.player}</span>
+                            <span class="leaderboard-score">${score.score.toLocaleString()}</span>
+                        </div>
+                    `;
+                });
+                
+                leaderboardElement.innerHTML = leaderboardHTML;
+            } catch (error) {
+                console.error('Error loading leaderboard for', gameId, ':', error);
+                leaderboardElement.innerHTML = '<div class="leaderboard-error">Erreur de chargement</div>';
             }
         }
 

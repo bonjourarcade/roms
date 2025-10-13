@@ -1,7 +1,7 @@
-title: Thunder Force II
-developer: 
-year: 
-genre: 
+title: The Lawnmower Man
+developer: Teque London, Atod
+year: 1994
+genre: Action
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
@@ -12,4 +12,4 @@ genre:
 enable_score: true
 hide: yes
 
-added: 2025-10-04
+added: 2025-10-12
