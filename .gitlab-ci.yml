@@ -59,7 +59,5 @@ send_newsletter:
     - echo "Newsletter automation completed"
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
-  variables:
-    CONVERTKIT_API_SECRET: $CONVERTKIT_API_SECRET
   dependencies:
     - pages
