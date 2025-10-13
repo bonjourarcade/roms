@@ -5,7 +5,8 @@ genre: Action
 controls:
   - 1️⃣  Voler
   - 2️⃣  Voler
-to_start: Insert Coin -> Start
+  - Start: Voler
+to_start: Start
 hide: yes
 
 added: 2025-07-26
