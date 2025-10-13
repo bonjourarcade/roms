@@ -93,10 +93,10 @@
 202541: 
   title: "Kickle Cubicle (NES)"
   game_id: "kicklecubiclenes"
-202542: 
+202541: 
   title: "Flappy Bird"
   game_id: "flappybird"
-202543: 
+202541: 
   title: "Mikie"
   game_id: "mikie"
 202544: 
@@ -117,6 +117,7 @@
 202549: 
   title: "Seicross"
   game_id: "seicross"
-202550: 
+202541: 
   title: "Loco-Motion"
   game_id: "locomotn"
+

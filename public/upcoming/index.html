@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BonjourArcade - Jeux à venir</title>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="BonjourArcade - Jeux à venir">
+    <meta property="og:description" content="Découvrez les prochains jeux de la semaine sur BonjourArcade">
+    <meta property="og:image" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="BonjourArcade - Jeux à venir">
+    <meta property="twitter:description" content="Découvrez les prochains jeux de la semaine sur BonjourArcade">
+    <meta property="twitter:image" content="">
+    
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .upcoming-games-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .upcoming-games-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            color: #333;
+        }
+        
+        .upcoming-games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .upcoming-game-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .upcoming-game-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .upcoming-game-image {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .upcoming-game-image img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .upcoming-game-info {
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .upcoming-game-info span {
+            display: inline-block;
+            margin-right: 8px;
+            padding: 2px 6px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .upcoming-game-info .developer {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .upcoming-game-info .year {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .upcoming-game-info .genre {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+        
+        .upcoming-game-week {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .upcoming-game-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .upcoming-game-id {
+            font-size: 0.9rem;
+            color: #888;
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .back-to-home {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .back-to-home a {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+        
+        .back-to-home a:hover {
+            background: #0056b3;
+        }
+        
+        .loading-message {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin: 40px 0;
+        }
+        
+        .error-message {
+            text-align: center;
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        /* Dark theme support */
+        .theme-dark .upcoming-games-title {
+            color: #fff;
+        }
+        
+        .theme-dark .upcoming-game-card {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+        
+        .theme-dark .upcoming-game-title {
+            color: #fff;
+        }
+        
+        .theme-dark .upcoming-game-week {
+            color: #ccc;
+        }
+        
+        .theme-dark .upcoming-game-id {
+            background: #444;
+            color: #ccc;
+        }
+        
+        .theme-dark .loading-message {
+            color: #ccc;
+        }
+        
+        .theme-dark .error-message {
+            background: #4a1a1a;
+            border-color: #6b2c2c;
+            color: #f8d7da;
+        }
+        
+        .theme-dark .upcoming-game-info span {
+            background: #444;
+            color: #ccc;
+        }
+        
+        .theme-dark .upcoming-game-info .developer {
+            background: #1a237e;
+            color: #90caf9;
+        }
+        
+        .theme-dark .upcoming-game-info .year {
+            background: #4a148c;
+            color: #ce93d8;
+        }
+        
+        .theme-dark .upcoming-game-info .genre {
+            background: #1b5e20;
+            color: #a5d6a7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-flex">
+                <button id="random-game-btn" class="random-game-btn">🎲 Jouer au hasard</button>
+                <button id="newsletter-subscribe" class="newsletter-btn">📧 S'abonner au jeu de la semaine</button>
+                <div class="game-launcher">
+                    <input type="text" id="game-id-input" placeholder="Recherche">
+                </div>
+                <img src="../assets/images/bonjourarcade-logo.png" alt="BonjourArcade Logo" class="header-logo">
+                <div class="header-actions">
+                    <a target="_blank" id="leaderboard-link" href="https://alloarcade.web.app">Classements</a>
+                    <img src="../assets/images/my_app_qr.png" alt="QR Code" class="static-qr-code">
+                </div>
+                <div style="position: relative;">
+                    <button id="theme-toggle-btn" class="theme-btn" aria-label="Changer le thème" type="button">
+                        <span id="theme-toggle-icon" style="display:inline-flex;align-items:center;font-size:1.2em;">🌓</span>
+                        <span id="theme-toggle-label">Thème</span>
+                    </button>
+                    <div id="theme-dropdown" style="display:none;position:absolute;top:110%;left:50%;transform:translateX(-50%);background:#222;color:#fff;border:1px solid #444;border-radius:8px;box-shadow:0 4px 16px #0002;min-width:170px;z-index:10000;padding:8px 0;">
+                        <button class="theme-option" data-theme="system" style="display:flex;align-items:center;width:100%;background:none;border:none;color:inherit;font:inherit;padding:8px 18px;gap:10px;cursor:pointer;"><span style='font-size:1.2em;'>🌓</span>Système</button>
+                        <button class="theme-option" data-theme="light" style="display:flex;align-items:center;width:100%;background:none;border:none;color:inherit;font:inherit;padding:8px 18px;gap:10px;cursor:pointer;"><span style='font-size:1.2em;'>☀️</span>Clair</button>
+                        <button class="theme-option" data-theme="dark" style="display:flex;align-items:center;width:100%;background:none;border:none;color:inherit;font:inherit;padding:8px 18px;gap:10px;cursor:pointer;"><span style='font-size:1.2em;'>🌙</span>Sombre</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="upcoming-games-container">
+                <h1 class="upcoming-games-title">🎮 Jeux à venir</h1>
+                
+                <div id="loading-message" class="loading-message">
+                    Chargement des jeux à venir...
+                </div>
+                
+                <div id="error-message" class="error-message" style="display: none;">
+                    Erreur lors du chargement des jeux à venir. Veuillez réessayer plus tard.
+                </div>
+                
+                <div id="upcoming-games-grid" class="upcoming-games-grid" style="display: none;">
+                    <!-- Les jeux seront chargés ici par JavaScript -->
+                </div>
+                
+                <div class="back-to-home">
+                    <a href="../">← Retour à l'accueil</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/utils.js"></script>
+    <script>
+        // Theme toggling logic (copied from main page)
+        function setTheme(theme) {
+            document.body.classList.remove('theme-light', 'theme-dark');
+            let classToAdd;
+            if (theme === 'system') {
+                classToAdd = getSystemTheme();
+            } else if (theme === 'dark') {
+                classToAdd = 'theme-dark';
+            } else {
+                classToAdd = 'theme-light';
+            }
+            document.body.classList.add(classToAdd);
+            
+            // Update button icon and label
+            const icon = document.getElementById('theme-toggle-icon');
+            const label = document.getElementById('theme-toggle-label');
+            if (icon && label) {
+                if (theme === 'dark') {
+                    icon.textContent = '🌙';
+                    label.textContent = 'Sombre';
+                } else if (theme === 'light') {
+                    icon.textContent = '☀️';
+                    label.textContent = 'Clair';
+                } else {
+                    icon.textContent = '🌓';
+                    label.textContent = 'Thème';
+                }
+            }
+            
+            // Highlight current in dropdown
+            document.querySelectorAll('.theme-option').forEach(btn => {
+                btn.style.background = (btn.dataset.theme === theme) ? '#444' : 'none';
+            });
+            
+            // Update button style for dark/light
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            if (themeBtn) {
+                if (classToAdd === 'theme-dark') {
+                    themeBtn.style.background = '#222';
+                    themeBtn.style.color = '#fff';
+                    themeBtn.style.border = '1px solid #fff2';
+                } else {
+                    themeBtn.style.background = '#fff';
+                    themeBtn.style.color = '#111';
+                    themeBtn.style.border = '1px solid #ccc';
+                }
+            }
+        }
+
+        function getSystemTheme() {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light';
+        }
+
+        // Dropdown logic
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        const themeDropdown = document.getElementById('theme-dropdown');
+        themeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            themeDropdown.style.display = (themeDropdown.style.display === 'block') ? 'none' : 'block';
+        });
+        document.addEventListener('click', function(e) {
+            if (themeDropdown.style.display === 'block') themeDropdown.style.display = 'none';
+        });
+        themeDropdown.addEventListener('click', function(e) { e.stopPropagation(); });
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const selected = btn.dataset.theme;
+                if (selected === 'system') {
+                    localStorage.removeItem('theme');
+                } else {
+                    localStorage.setItem('theme', selected);
+                }
+                setTheme(selected);
+                themeDropdown.style.display = 'none';
+            });
+        });
+
+        // On load: use localStorage or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const initialTheme = savedTheme || 'system';
+        setTheme(initialTheme);
+        
+        // Listen for system theme changes if user hasn't chosen
+        if (!savedTheme) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                setTheme('system');
+            });
+        }
+
+        // Load upcoming games
+        async function loadUpcomingGames() {
+            try {
+                // Load both predictions and game data
+                const [predictionsResponse, gamesResponse] = await Promise.all([
+                    fetch('../plinko/predict/predictions.yaml'),
+                    fetch('../gamelist.json')
+                ]);
+                
+                if (!predictionsResponse.ok || !gamesResponse.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                const yamlText = await predictionsResponse.text();
+                const gamesData = await gamesResponse.json();
+                
+                const predictions = parseYamlPredictions(yamlText);
+                const enrichedGames = enrichPredictionsWithGameData(predictions, gamesData.games);
+                
+                displayUpcomingGames(enrichedGames);
+            } catch (error) {
+                console.error('Error loading upcoming games:', error);
+                showError();
+            }
+        }
+
+        function parseYamlPredictions(yamlText) {
+            const games = [];
+            const lines = yamlText.split('\n');
+            
+            let currentWeek = null;
+            let currentGame = {};
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Skip comments and empty lines
+                if (line.startsWith('#') || line === '') {
+                    continue;
+                }
+                
+                // Check if line is a week number (YYYYWW format)
+                if (/^\d{6}:$/.test(line)) {
+                    // Save previous game if exists
+                    if (currentWeek && currentGame.title) {
+                        games.push({
+                            week: currentWeek,
+                            title: currentGame.title,
+                            game_id: currentGame.game_id
+                        });
+                    }
+                    
+                    // Start new week
+                    currentWeek = line.replace(':', '');
+                    currentGame = {};
+                } else if (line.startsWith('title:')) {
+                    currentGame.title = line.replace('title:', '').trim().replace(/^["']|["']$/g, '');
+                } else if (line.startsWith('game_id:')) {
+                    currentGame.game_id = line.replace('game_id:', '').trim().replace(/^["']|["']$/g, '');
+                }
+            }
+            
+            // Don't forget the last game
+            if (currentWeek && currentGame.title) {
+                games.push({
+                    week: currentWeek,
+                    title: currentGame.title,
+                    game_id: currentGame.game_id
+                });
+            }
+            
+            // Filter out past games
+            return filterFutureGames(games);
+        }
+
+        function enrichPredictionsWithGameData(predictions, gamesData) {
+            return predictions.map(prediction => {
+                // Find matching game data
+                const gameData = gamesData.find(game => game.id === prediction.game_id);
+                
+                if (gameData) {
+                    return {
+                        ...prediction,
+                        title: gameData.title || prediction.title,
+                        coverArt: gameData.coverArt,
+                        pageUrl: gameData.pageUrl || `/play?game=${prediction.game_id}`,
+                        developer: gameData.developer,
+                        year: gameData.year,
+                        genre: gameData.genre
+                    };
+                } else {
+                    // Fallback if game data not found
+                    return {
+                        ...prediction,
+                        coverArt: '/assets/images/placeholder_thumb.png',
+                        pageUrl: `/play?game=${prediction.game_id}`,
+                        developer: '',
+                        year: '',
+                        genre: ''
+                    };
+                }
+            });
+        }
+
+        function getCurrentWeek() {
+            const now = new Date();
+            const year = now.getFullYear();
+            
+            // Get the first day of the year
+            const firstDay = new Date(year, 0, 1);
+            
+            // Calculate the week number
+            const daysSinceFirstDay = Math.floor((now - firstDay) / (24 * 60 * 60 * 1000));
+            const weekNumber = Math.ceil((daysSinceFirstDay + firstDay.getDay() + 1) / 7);
+            
+            // Format as YYYYWW
+            return year.toString() + weekNumber.toString().padStart(2, '0');
+        }
+
+        function filterFutureGames(games) {
+            const currentWeek = getCurrentWeek();
+            
+            return games.filter(game => {
+                // Compare week strings (YYYYWW format)
+                // Convert to numbers for proper comparison
+                const gameWeekNum = parseInt(game.week);
+                const currentWeekNum = parseInt(currentWeek);
+                return gameWeekNum >= currentWeekNum;
+            });
+        }
+
+        function displayUpcomingGames(games) {
+            const loadingMessage = document.getElementById('loading-message');
+            const gamesGrid = document.getElementById('upcoming-games-grid');
+            
+            loadingMessage.style.display = 'none';
+            
+            if (games.length === 0) {
+                gamesGrid.style.display = 'block';
+                gamesGrid.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>🎮 Aucun jeu à venir</h3>
+                        <p>Il n'y a actuellement aucun jeu prévu pour les prochaines semaines.</p>
+                        <p>Revenez plus tard pour découvrir les nouveaux jeux !</p>
+                    </div>
+                `;
+            } else {
+                gamesGrid.style.display = 'grid';
+                gamesGrid.innerHTML = games.map(game => {
+                    const weekFormatted = formatWeek(game.week);
+                    const coverSrc = getThumbnailSrc(game.coverArt);
+                    const gameInfo = getGameInfo(game);
+                    
+                    return `
+                        <div class="upcoming-game-card" onclick="handleGameClick(this)">
+                            <a href="${game.pageUrl}" style="text-decoration: none; color: inherit;">
+                                <div class="upcoming-game-image">
+                                    <img src="${coverSrc}" alt="${game.title}" loading="lazy">
+                                </div>
+                                <div class="upcoming-game-week">Semaine ${weekFormatted}</div>
+                                <div class="upcoming-game-title">${game.title}</div>
+                                ${gameInfo}
+                                <div class="upcoming-game-id">ID: ${game.game_id}</div>
+                            </a>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function formatWeek(weekString) {
+            const year = weekString.substring(0, 4);
+            const week = weekString.substring(4, 6);
+            return `${week}/${year}`;
+        }
+
+        function getThumbnailSrc(coverArt) {
+            if (!coverArt || coverArt === '/assets/images/placeholder_thumb.png') {
+                return '/assets/images/placeholder_thumb.png';
+            }
+            
+            // Convert cover.png to cover_thumb.png
+            if (coverArt.includes('/cover.png')) {
+                return coverArt.replace('/cover.png', '/cover_thumb.png');
+            }
+            
+            return coverArt;
+        }
+
+        function getGameInfo(game) {
+            let info = '';
+            if (game.developer || game.year || game.genre) {
+                info = '<div class="upcoming-game-info">';
+                if (game.developer) info += `<span class="developer">${game.developer}</span>`;
+                if (game.year) info += `<span class="year">${game.year}</span>`;
+                if (game.genre) info += `<span class="genre">${game.genre}</span>`;
+                info += '</div>';
+            }
+            return info;
+        }
+
+        function handleGameClick(element) {
+            // Simple click handler for game cards
+            const link = element.querySelector('a');
+            if (link) {
+                window.location.href = link.href;
+            }
+        }
+
+        function showError() {
+            const loadingMessage = document.getElementById('loading-message');
+            const errorMessage = document.getElementById('error-message');
+            
+            loadingMessage.style.display = 'none';
+            errorMessage.style.display = 'block';
+        }
+
+        // Initialize meta tags with current domain
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentDomain = window.location.origin;
+            const currentUrl = window.location.href;
+            
+            // Update Open Graph meta tags
+            updateMetaTag('og:url', currentUrl);
+            updateMetaTag('og:image', `${currentDomain}/assets/images/bonjourarcade-logo.png`);
+            
+            // Update Twitter meta tags
+            updateMetaTag('twitter:url', currentUrl);
+            updateMetaTag('twitter:image', `${currentDomain}/assets/images/bonjourarcade-logo.png`);
+            
+            // Load upcoming games
+            loadUpcomingGames();
+        });
+        
+        /**
+         * Helper function to update meta tags
+         * @param {string} property - The meta tag property to update
+         * @param {string} content - The new content value
+         */
+        function updateMetaTag(property, content) {
+            const metaTag = document.querySelector(`meta[property="${property}"]`) || 
+                           document.querySelector(`meta[name="${property}"]`);
+            if (metaTag) {
+                metaTag.setAttribute('content', content);
+            }
+        }
+    </script>
+</body>
+</html>
