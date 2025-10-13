@@ -1,0 +1,15 @@
+title: "Castlevania: The Adventure"
+developer: Konami
+year: 1989
+genre: Platform
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-12
