@@ -956,6 +956,17 @@
             
             return displayTitle;
         }
+
+        /**
+         * Safely parse the 'added' date from a game object and return a timestamp.
+         * Returns -Infinity for missing/invalid dates so that games with a real date appear first when sorting newest-first.
+         */
+        function getAddedTimestamp(game) {
+            if (!game || !game.added) return -Infinity;
+            const t = Date.parse(game.added);
+            if (isNaN(t)) return -Infinity;
+            return t;
+        }
         
         function renderGames(games) {
             const container = document.getElementById('gameGrid');
@@ -1014,17 +1025,12 @@
                 } else {
                     if (sortSelect && sortSelect.value === 'latest') {
                         // Sort by added date (newest first)
-                        // Treat missing `added` metadata as most recent
                         games.sort((a, b) => {
-                            const aHas = !!a.added;
-                            const bHas = !!b.added;
-                            if (aHas && bHas) {
-                                const dateA = new Date(a.added);
-                                const dateB = new Date(b.added);
-                                return dateB - dateA;
-                            }
-                            if (!aHas && bHas) return -1; // a missing -> treat as newer
-                            if (aHas && !bHas) return 1;  // b missing -> treat as newer
+                            // Use added timestamps (newest first)
+                            const ta = getAddedTimestamp(a);
+                            const tb = getAddedTimestamp(b);
+                            if (ta !== -Infinity || tb !== -Infinity) return tb - ta;
+                            // Fallback to alphabetical if neither has an added date
                             let titleA = a.title;
                             let titleB = b.title;
                             if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
@@ -1128,23 +1134,14 @@
                     }
 
                     const sorted = [...games].sort((a, b) => {
-                        // Treat missing `added` metadata as most recent
-                        const aHas = !!a.added;
-                        const bHas = !!b.added;
-                        if (aHas && bHas) {
-                            const dateA = new Date(a.added);
-                            const dateB = new Date(b.added);
-                            return dateB - dateA;
-                        }
-                        if (!aHas && bHas) return -1; // a missing -> newer
-                        if (aHas && !bHas) return 1;  // b missing -> newer
+                        const ta = getAddedTimestamp(a);
+                        const tb = getAddedTimestamp(b);
+                        if (ta !== -Infinity || tb !== -Infinity) return tb - ta;
                         let titleA = getDisplayTitle(a);
                         let titleB = getDisplayTitle(b);
-                        
                         // Normalize titles for sorting (move "The" to end)
                         const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
                         const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
-                        
                         return normalizedA.localeCompare(normalizedB);
                     });
 
