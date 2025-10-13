@@ -687,13 +687,15 @@
         function filterFutureGames(games) {
             const currentWeek = getCurrentWeek();
             
-            return games.filter(game => {
-                // Compare week strings (YYYYWW format)
-                // Convert to numbers for proper comparison
-                const gameWeekNum = parseInt(game.week);
-                const currentWeekNum = parseInt(currentWeek);
-                return gameWeekNum >= currentWeekNum;
-            });
+                return games.filter(game => {
+                    // Compare week strings (YYYYWW format)
+                    // Convert to numbers for proper comparison
+                    const gameWeekNum = parseInt(game.week);
+                    const currentWeekNum = parseInt(currentWeek);
+                    // Also include the immediate previous week to ensure recently added predictions appear
+                    const minWeek = Math.max(0, currentWeekNum - 1);
+                    return gameWeekNum >= minWeek;
+                });
         }
 
         async function displayUpcomingGames(games) {
