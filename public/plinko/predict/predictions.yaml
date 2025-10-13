@@ -94,24 +94,27 @@
   title: "Kickle Cubicle (NES)"
   game_id: "kicklecubiclenes"
 202542: 
+  title: "Flappy Bird"
+  game_id: flappybird
+202543: 
   title: "Mushihimesama Futari"
   game_id: "futari15"
-202543: 
+202544: 
   title: "Gunbird"
   game_id: "gunbird"
-202544: 
+202545: 
   title: "UndeadLine"
   game_id: "undeadline"
-202545: 
+202546: 
   title: "Ketsui: Kizuna Jigoku Tachi"
   game_id: "ket"
-202546: 
+202547: 
   title: "Parodius"
   game_id: "parodius"
-202547: 
+202548: 
   title: "Seicross"
   game_id: "seicross"
-202548: 
+202549: 
   title: "Loco-Motion"
   game_id: "locomotn"
 
