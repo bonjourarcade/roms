@@ -5,6 +5,7 @@ Merci de jouer ! :)
 - **Jeu de la semaine** : sélectionné automatiquement chaque semaine via le système Plinko
 - `metadata.yaml` : fichier modèle de métadonnées à placer dans
   `public/games/<game_id>/`
+- ROMs: https://archive.org/details/roms_bonjourarcade
 
 # Ajouter un nouveau jeu
 
