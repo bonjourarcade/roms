@@ -271,43 +271,43 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">🎮 Bonjour Arcade</div>
-        <div class="subtitle">Screensaver Mode</div>
+    <div class="logo">🎮 Bonjour Arcade</div>
+    <div class="subtitle">Mode Écran de veille</div>
         
         <div class="time-config">
-            <h3>⏱️ Game Duration</h3>
+            <h3>⏱️ Durée du jeu</h3>
             <div class="time-inputs">
                 <div class="time-input-group">
-                    <label for="minutes">Minutes:</label>
-                    <input type="number" id="minutes" min="1" max="60" value="2" class="time-input">
+                    <label for="minutes">Minutes :</label>
+                    <input type="number" id="minutes" min="0" max="60" value="2" class="time-input">
                 </div>
                 <div class="time-input-group">
-                    <label for="seconds">Seconds:</label>
+                    <label for="seconds">Secondes :</label>
                     <input type="number" id="seconds" min="0" max="59" value="30" class="time-input">
                 </div>
             </div>
-            <p class="time-note">Default: 2 minutes 30 seconds (150 seconds total)</p>
+            <p class="time-note">Par défaut : 2 minutes 30 secondes (150 secondes au total)</p>
         </div>
         
         <div class="chronological-option">
-            <h3>📅 Game Order</h3>
+            <h3>📅 Ordre des jeux</h3>
             <div class="checkbox-container">
                 <input type="checkbox" id="chronologicalOrder" class="chronological-checkbox">
-                <label for="chronologicalOrder">Play games in chronological order (newest first)</label>
+                <label for="chronologicalOrder">Jouer les jeux dans l'ordre chronologique (les plus récents en premier)</label>
             </div>
-            <p class="chronological-note">When enabled, games will be played in the order they were added to the website, starting with the most recently added games.</p>
+            <p class="chronological-note">Si activé, les jeux seront lancés dans l'ordre où ils ont été ajoutés au site, en commençant par les plus récents.</p>
         </div>
         
         <button class="launch-btn" onclick="launchScreensaver()">
-            🚀 Launch Screensaver
+            🚀 Lancer l'écran de veille
         </button>
         
         <div class="info">
-            <h3>How it works</h3>
-            <p>The screensaver will automatically load random games at your configured interval, creating an endless arcade experience. Perfect for parties, waiting rooms, or just discovering new games!</p>
+            <h3>Comment ça marche</h3>
+            <p>L'écran de veille chargera automatiquement des jeux aléatoires à l'intervalle configuré, créant une expérience d'arcade continue. Idéal pour les fêtes, salles d'attente, ou tout simplement pour découvrir de nouveaux jeux !</p>
             
             <div class="loading-container">
-                <div class="loading-text">Auto-launching in 2 minutes...</div>
+                <div class="loading-text">Lancement automatique...</div>
                 <div class="loading-bar">
                     <div class="loading-progress"></div>
                 </div>
@@ -318,11 +318,30 @@
     <script>
         let loadingInterval;
         let progress = 0;
-        
+        let loadingIncrementPerSecond = 0;
+
+        function getConfiguredTotalSecondsFromInputs() {
+            let minutes = parseInt(document.getElementById('minutes').value) || 2;
+            let seconds = parseInt(document.getElementById('seconds').value) || 30;
+
+            // Validate input ranges
+            minutes = Math.max(0, Math.min(60, minutes));
+            seconds = Math.max(0, Math.min(59, seconds));
+
+            // Ensure minimum total time of 30 seconds
+            let totalSeconds = (minutes * 60) + seconds;
+            if (totalSeconds < 30) {
+                totalSeconds = 30;
+            }
+
+            return totalSeconds;
+        }
+
         function updateLoadingBar() {
             const progressElement = document.querySelector('.loading-progress');
             if (progress < 100) {
-                progress += 0.833; // Increment by ~0.833% every second (120 seconds total)
+                progress += loadingIncrementPerSecond;
+                if (progress > 100) progress = 100;
                 progressElement.style.width = progress + '%';
             }
         }
@@ -331,19 +350,18 @@
             // Get the configured time values with validation
             let minutes = parseInt(document.getElementById('minutes').value) || 2;
             let seconds = parseInt(document.getElementById('seconds').value) || 30;
-            
-            // Validate input ranges
-            minutes = Math.max(1, Math.min(60, minutes));
+
+            // Validate input ranges (allow 0 minutes)
+            minutes = Math.max(0, Math.min(60, minutes));
             seconds = Math.max(0, Math.min(59, seconds));
-            
+
             // Ensure minimum total time of 30 seconds
-            const totalSeconds = (minutes * 60) + seconds;
+            let totalSeconds = (minutes * 60) + seconds;
             if (totalSeconds < 30) {
-                minutes = 0;
-                seconds = 30;
+                totalSeconds = 30;
             }
-            
-            const totalMilliseconds = (minutes * 60 + seconds) * 1000;
+
+            const totalMilliseconds = totalSeconds * 1000;
             
             // Get chronological order preference
             const chronologicalOrder = document.getElementById('chronologicalOrder').checked;
@@ -358,21 +376,68 @@
             window.location.href = '/randomgame/';
         }
 
-        // Auto-launch after 2 minutes if no interaction
+    // Auto-launch after configured input if no interaction
         let autoLaunchTimer;
         
         function startAutoLaunchTimer() {
+            // Auto-launch is fixed to 2 minutes (120 seconds). The per-game duration
+            // chosen by the user is still saved to sessionStorage when they launch.
+            const totalSeconds = 120; // hardcoded 2 minutes
+
+            // Prepare loading bar increments so it fills in 120 seconds
+            progress = 0;
+            loadingIncrementPerSecond = 100 / totalSeconds;
+
+            // Update loading text to reflect fixed 2-minute interval
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingText) {
+                loadingText.textContent = `Lancement automatique dans 2m 0s...`;
+            }
+
             // Start loading bar animation
             loadingInterval = setInterval(updateLoadingBar, 1000);
-            
-            // Auto-launch after 2 minutes (120 seconds)
+
+            // Auto-launch after 120 seconds
             autoLaunchTimer = setTimeout(() => {
                 clearInterval(loadingInterval);
                 launchScreensaver();
-            }, 120000);
+            }, totalSeconds * 1000);
         }
 
         // Start the auto-launch timer
+        // Prefill inputs from URL params or sessionStorage
+        (function prefillFromParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlMinutes = urlParams.get('minutes');
+            const urlSeconds = urlParams.get('seconds');
+            const urlChrono = urlParams.get('chronological');
+
+            // If sessionStorage has values (user returned), prefer them
+            const storedInterval = sessionStorage.getItem('screensaverInterval');
+            if (storedInterval) {
+                const storedSeconds = Math.round(parseInt(storedInterval, 10) / 1000);
+                const m = Math.floor(storedSeconds / 60);
+                const s = storedSeconds % 60;
+                document.getElementById('minutes').value = m;
+                document.getElementById('seconds').value = s;
+            }
+
+            if (urlMinutes !== null) {
+                const m = parseInt(urlMinutes, 10);
+                if (!Number.isNaN(m)) document.getElementById('minutes').value = Math.max(0, Math.min(60, m));
+            } else if (urlSeconds !== null) {
+                // If seconds provided without minutes, assume 0 minutes so ?seconds=10 -> 0m10s
+                document.getElementById('minutes').value = 0;
+            }
+            if (urlSeconds !== null) {
+                const s = parseInt(urlSeconds, 10);
+                if (!Number.isNaN(s)) document.getElementById('seconds').value = Math.max(0, Math.min(59, s));
+            }
+            if (urlChrono !== null) {
+                document.getElementById('chronologicalOrder').checked = urlChrono === '1' || urlChrono === 'true';
+            }
+        })();
+
         startAutoLaunchTimer();
     </script>
 </body>
