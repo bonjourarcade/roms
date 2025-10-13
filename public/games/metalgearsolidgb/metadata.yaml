@@ -1,0 +1,15 @@
+title: Metal Gear Solid
+developer: Konami Computer Entertainment Japan, Tose
+year: 2000
+genre: Stealth
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-13

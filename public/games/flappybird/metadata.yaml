@@ -5,7 +5,7 @@ genre: Action
 controls:
   - 1️⃣  Voler
   - 2️⃣  Voler
-  - Start: Voler
+  - "Start: Voler"
 to_start: Start
 hide: yes
 
