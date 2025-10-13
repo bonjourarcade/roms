@@ -306,11 +306,14 @@
         <header>
             <div class="header-flex">
                 <button id="random-game-btn" class="random-game-btn">🎲 Jouer au hasard</button>
+                <!-- Home button removed: logo will link to home -->
                 <button id="newsletter-subscribe" class="newsletter-btn">📧 S'abonner au jeu de la semaine</button>
                 <div class="game-launcher">
                     <input type="text" id="game-id-input" placeholder="Recherche">
                 </div>
-                <img src="../assets/images/bonjourarcade-logo.png" alt="BonjourArcade Logo" class="header-logo">
+                <a href="/" aria-label="Retour à l'accueil">
+                    <img src="../assets/images/bonjourarcade-logo.png" alt="BonjourArcade Logo" class="header-logo">
+                </a>
                 <div class="header-actions">
                     <a target="_blank" id="leaderboard-link" href="https://alloarcade.web.app">Classements</a>
                     <img src="../assets/images/my_app_qr.png" alt="QR Code" class="static-qr-code">
@@ -346,7 +349,7 @@
                 </div>
                 
                 <div class="back-to-home">
-                    <a href="../">← Retour à l'accueil</a>
+                    <a href="/" aria-label="Retour à l'accueil">← Retour à l'accueil</a>
                 </div>
             </div>
         </main>

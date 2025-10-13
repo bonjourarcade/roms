@@ -240,14 +240,12 @@ async function fetchGameData() {
                     document.body.classList.remove('search-active');
                 }
 
-                // Check for exact id match (case-insensitive and accent-insensitive, full match only)
-                const exactMatch = window.allGamesData.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
+                // Filter games by partial match on title or id (accent-insensitive)
                 let filteredGames;
-                if (exactMatch && searchTerm.length > 0 && removeAccents(searchTerm) === removeAccents(exactMatch.id)) {
-                    // Show only the exact match, even if hidden
-                    filteredGames = [exactMatch];
+                if (searchTerm.length === 0) {
+                    filteredGames = window.allGamesData;
                 } else {
-                    // Normal filtering (by title, including hidden games in search)
+                    const normalizedSearch = removeAccents(searchTerm);
                     filteredGames = window.allGamesData.filter(game => {
                         let displayTitle = game.title;
                         if (!displayTitle || displayTitle === game.id) {
@@ -255,8 +253,11 @@ async function fetchGameData() {
                         }
                         // Normalize title for display (move "The" to the end)
                         displayTitle = normalizeTitleForSorting(displayTitle);
-                        // Use accent-insensitive search
-                        return removeAccents(displayTitle).includes(removeAccents(searchTerm));
+
+                        // Match either the display title or the game id (partial, accent-insensitive)
+                        const titleMatch = removeAccents(displayTitle).includes(normalizedSearch);
+                        const idMatch = game.id && removeAccents(game.id).includes(normalizedSearch);
+                        return titleMatch || idMatch;
                     });
                 }
                 populatePreviousGames(filteredGames);
@@ -307,30 +308,26 @@ async function fetchGameData() {
                 // Always exclude external games from random selection
                 let gamesToRandomizeFrom = visibleGames.filter(game => game.core !== 'external');
                 
-                if (searchInput && searchInput.value.trim()) {
+                    if (searchInput && searchInput.value.trim()) {
                     const searchTerm = searchInput.value.toLowerCase();
-                    // Check for exact id match first (accent-insensitive) - but exclude external games
-                    const exactMatch = gamesToRandomizeFrom.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
-                    if (exactMatch) {
-                        // If exact match exists, just go to that game (no external games in pool)
-                        addGameToHistory(exactMatch.id);
-                        window.location.href = exactMatch.pageUrl;
-                        return;
-                    }
-                    
+
                     // Filter games by search term for random selection (include hidden games in search)
+                    const normalizedSearch = removeAccents(searchTerm);
                     gamesToRandomizeFrom = window.allGamesData.filter(game => {
                         // Always exclude external games from random selection
                         if (game.core === 'external') return false;
-                        
+
                         let displayTitle = game.title;
                         if (!displayTitle || displayTitle === game.id) {
                             displayTitle = capitalizeFirst(game.id);
                         }
                         // Normalize title for display (move "The" to the end)
                         displayTitle = normalizeTitleForSorting(displayTitle);
-                        // Use accent-insensitive search
-                        return removeAccents(displayTitle).includes(removeAccents(searchTerm));
+
+                        // Match title or id partially (accent-insensitive)
+                        const titleMatch = removeAccents(displayTitle).includes(normalizedSearch);
+                        const idMatch = game.id && removeAccents(game.id).includes(normalizedSearch);
+                        return titleMatch || idMatch;
                     });
                 }
                 
@@ -365,28 +362,26 @@ async function fetchGameData() {
                     
                     if (searchInput && searchInput.value.trim()) {
                         const searchTerm = searchInput.value.toLowerCase();
-                        // Check for exact id match first (accent-insensitive) - but exclude external games
-                        const exactMatch = gamesToRandomizeFrom.find(game => game.id && removeAccents(game.id) === removeAccents(searchTerm));
-                        if (exactMatch) {
-                            infoText.textContent = `Respecte votre recherche actuelle (1 jeu exact)`;
-                            return;
-                        }
-                        
+                        const normalizedSearch = removeAccents(searchTerm);
+
                         // Filter games by search term (include hidden games in search)
                         gamesToRandomizeFrom = window.allGamesData.filter(game => {
                             // Always exclude external games from random selection
                             if (game.core === 'external') return false;
-                            
+
                             let displayTitle = game.title;
                             if (!displayTitle || displayTitle === game.id) {
                                 displayTitle = capitalizeFirst(game.id);
                             }
                             // Normalize title for display (move "The" to the end)
                             displayTitle = normalizeTitleForSorting(displayTitle);
-                            // Use accent-insensitive search
-                            return removeAccents(displayTitle).includes(removeAccents(searchTerm));
+
+                            // Match title or id partially (accent-insensitive)
+                            const titleMatch = removeAccents(displayTitle).includes(normalizedSearch);
+                            const idMatch = game.id && removeAccents(game.id).includes(normalizedSearch);
+                            return titleMatch || idMatch;
                         });
-                        
+
                         // Calculate total available games (excluding external games)
                         const totalAvailableGames = window.allGamesData.filter(game => game.core !== 'external').length;
                         infoText.textContent = `Respecte votre recherche actuelle (${gamesToRandomizeFrom.length}/${totalAvailableGames} jeux)`;
