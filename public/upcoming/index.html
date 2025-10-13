@@ -574,12 +574,16 @@
                     const response = await fetch('https://us-central1-alloarcade.cloudfunctions.net/listGameScores', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            'accept': '*/*',
+                            'content-type': 'application/json',
                             'origin': 'https://alloarcade.web.app',
                             'referer': 'https://alloarcade.web.app/',
                         },
                         body: JSON.stringify({
-                            gameId: gameId
+                            data: {
+                                timeRange: "all",
+                                gameId: gameId
+                            }
                         })
                     });
 
@@ -687,15 +691,14 @@
         function filterFutureGames(games) {
             const currentWeek = getCurrentWeek();
             
-                return games.filter(game => {
-                    // Compare week strings (YYYYWW format)
-                    // Convert to numbers for proper comparison
-                    const gameWeekNum = parseInt(game.week);
-                    const currentWeekNum = parseInt(currentWeek);
-                    // Also include the immediate previous week to ensure recently added predictions appear
-                    const minWeek = Math.max(0, currentWeekNum - 1);
-                    return gameWeekNum >= minWeek;
-                });
+            return games.filter(game => {
+                // Compare week strings (YYYYWW format)
+                // Convert to numbers for proper comparison
+                const gameWeekNum = parseInt(game.week);
+                const currentWeekNum = parseInt(currentWeek);
+                // Exclude the current week so upcoming starts after this week
+                return gameWeekNum > currentWeekNum;
+            });
         }
 
         async function displayUpcomingGames(games) {

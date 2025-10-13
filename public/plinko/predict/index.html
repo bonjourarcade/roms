@@ -137,12 +137,39 @@
 
     // Fetch and parse YAML
     let predictions = {};
-    fetch('predictions.yaml')
-      .then(r => r.text())
-      .then(yamlText => {
-        predictions = jsyaml.load(yamlText) || {};
-        renderFutureTable();
-      });
+    let gamesById = {};
+
+    // Helper: get a display title for a prediction using gamelist.json when possible
+    function getTitleForPrediction(pred) {
+      if (!pred) return '';
+      // If pred is a string (older format), return it directly
+      if (typeof pred === 'string') return pred;
+      const gid = pred.game_id || pred.gameId || pred.id;
+      if (gid && gamesById[gid]) return gamesById[gid];
+      if (pred.title) return pred.title;
+      return gid || '';
+    }
+
+    // Load predictions and gamelist in parallel (gamelist optional)
+    Promise.all([
+      fetch('predictions.yaml').then(r => r.text()).then(yamlText => { predictions = jsyaml.load(yamlText) || {}; }),
+      fetch('../gamelist.json').then(r => {
+        if (!r.ok) return null;
+        return r.json();
+      }).then(data => {
+        if (!data || !Array.isArray(data.games)) return;
+        data.games.forEach(g => {
+          if (g && g.id) gamesById[g.id] = g.title || g.id;
+        });
+      }).catch(() => {
+        // ignore gamelist errors, predictions will still render with their own title
+      })
+    ]).then(() => {
+      renderFutureTable();
+    }).catch(err => {
+      console.error('Error loading predictions or gamelist:', err);
+      renderFutureTable();
+    });
 
     // Handle date picker
     const weekPicker = document.getElementById('week-picker');
@@ -154,9 +181,10 @@
         return;
       }
       
-      // Always show the seed and game info
+      // Always show the seed and game info (use gamelist title when available)
       if (predictions[seed]) {
-        resultDiv.innerHTML = `<b>Seed:</b> ${seed}<br><b>Game:</b> ${predictions[seed]}`;
+        const title = getTitleForPrediction(predictions[seed]);
+        resultDiv.innerHTML = `<b>Seed:</b> ${seed}<br><b>Game:</b> ${title}`;
       } else {
         resultDiv.innerHTML = `<b>Seed:</b> ${seed}<br>`;
       }
@@ -197,8 +225,11 @@
         if (seed >= currentSeed) {
           const tr = document.createElement('tr');
           const date = seedToDate(seed);
+          const pred = predictions[seed];
+          const title = getTitleForPrediction(pred);
+          const gameId = (pred && (pred.game_id || pred.gameId || pred.id)) || '';
           tr.innerHTML =
-            `<td>${seed}</td><td>${date}</td><td><a href="/play?game=${predictions[seed].game_id}">${predictions[seed].title}</a></td>`;
+            `<td>${seed}</td><td>${date}</td><td>${ gameId ? `<a href="/play?game=${gameId}">${title}</a>` : title }</td>`;
           tbody.appendChild(tr);
         }
       }
