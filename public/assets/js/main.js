@@ -247,19 +247,17 @@ async function fetchGameData() {
                     // Show only the exact match, even if hidden
                     filteredGames = [exactMatch];
                 } else {
-                                    // Normal filtering (by title, only visible games)
-                filteredGames = window.allGamesData.filter(game => {
-                    // Only match visible games for substring search
-                    if (game.hide === true || game.hide === 'yes') return false;
-                    let displayTitle = game.title;
-                    if (!displayTitle || displayTitle === game.id) {
-                        displayTitle = capitalizeFirst(game.id);
-                    }
-                    // Normalize title for display (move "The" to the end)
-                    displayTitle = normalizeTitleForSorting(displayTitle);
-                    // Use accent-insensitive search
-                    return removeAccents(displayTitle).includes(removeAccents(searchTerm));
-                });
+                    // Normal filtering (by title, including hidden games in search)
+                    filteredGames = window.allGamesData.filter(game => {
+                        let displayTitle = game.title;
+                        if (!displayTitle || displayTitle === game.id) {
+                            displayTitle = capitalizeFirst(game.id);
+                        }
+                        // Normalize title for display (move "The" to the end)
+                        displayTitle = normalizeTitleForSorting(displayTitle);
+                        // Use accent-insensitive search
+                        return removeAccents(displayTitle).includes(removeAccents(searchTerm));
+                    });
                 }
                 populatePreviousGames(filteredGames);
 
@@ -320,8 +318,11 @@ async function fetchGameData() {
                         return;
                     }
                     
-                    // Filter games by search term for random selection
-                    gamesToRandomizeFrom = visibleGames.filter(game => {
+                    // Filter games by search term for random selection (include hidden games in search)
+                    gamesToRandomizeFrom = window.allGamesData.filter(game => {
+                        // Always exclude external games from random selection
+                        if (game.core === 'external') return false;
+                        
                         let displayTitle = game.title;
                         if (!displayTitle || displayTitle === game.id) {
                             displayTitle = capitalizeFirst(game.id);
@@ -371,8 +372,11 @@ async function fetchGameData() {
                             return;
                         }
                         
-                        // Filter games by search term
-                        gamesToRandomizeFrom = visibleGames.filter(game => {
+                        // Filter games by search term (include hidden games in search)
+                        gamesToRandomizeFrom = window.allGamesData.filter(game => {
+                            // Always exclude external games from random selection
+                            if (game.core === 'external') return false;
+                            
                             let displayTitle = game.title;
                             if (!displayTitle || displayTitle === game.id) {
                                 displayTitle = capitalizeFirst(game.id);
@@ -383,7 +387,9 @@ async function fetchGameData() {
                             return removeAccents(displayTitle).includes(removeAccents(searchTerm));
                         });
                         
-                        infoText.textContent = `Respecte votre recherche actuelle (${gamesToRandomizeFrom.length}/${visibleGames.length} jeux)`;
+                        // Calculate total available games (excluding external games)
+                        const totalAvailableGames = window.allGamesData.filter(game => game.core !== 'external').length;
+                        infoText.textContent = `Respecte votre recherche actuelle (${gamesToRandomizeFrom.length}/${totalAvailableGames} jeux)`;
                     } else {
                         infoText.textContent = `Respecte votre recherche actuelle (${visibleGames.length} jeux)`;
                     }
@@ -664,8 +670,17 @@ function populatePreviousGames(games) {
     if (games.length === 1) {
         visibleGames = games;
     } else {
-        // Filter out hidden games
-        visibleGames = games.filter(game => !(game.hide === true || game.hide === 'yes'));
+        // Check if we're in search mode by looking at the search input
+        const searchInput = document.getElementById('game-id-input');
+        const isSearching = searchInput && searchInput.value.trim().length > 0;
+        
+        if (isSearching) {
+            // In search mode, show all games including hidden ones
+            visibleGames = games;
+        } else {
+            // Filter out hidden games when not searching
+            visibleGames = games.filter(game => !(game.hide === true || game.hide === 'yes'));
+        }
     }
 
     // Handle case where there are no previous games
