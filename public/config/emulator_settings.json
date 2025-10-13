@@ -3,7 +3,9 @@
     "mame2003-plus_neogeo_bios": "unibios40",
     "mame2003-plus_skip_disclaimer": "enabled",
     "mame2003-plus_skip_warnings": "enabled",
-    "ff-ratio": "8.0"
+    "ff-ratio": "8.0",
+    "gambatte_gb_colorization": "GBC",
+    "gambatte_gb_internal_palette": "GBC - Dark Green"
   },
   "EJS_backgroundBlur": true,
   "EJS_disableAutoLang": true,
@@ -13,5 +15,6 @@
   "EJS_AdUrl": "/ads",
   "EJS_AdTimer": 4000,
   "EJS_AdSize": ["400px", "262px"],
+  "EJS_DEBUG_XX": true,
   "EJS_AdMode": 1
 }
