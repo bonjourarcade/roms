@@ -1764,16 +1764,16 @@
                 
                 for (let i = 0; i < lines.length; i++) {
                     const line = lines[i];
-                    
+
                     // Check if line is a week key (format: YYYYWW: with optional space)
                     if (/^\d{6}: ?$/.test(line)) {
-                        if (currentPrediction) {
+                        if (currentPrediction && currentPrediction.game_id) {
                             predictions.push(currentPrediction);
                         }
                         currentPrediction = {
                             week: line.replace(/^(\d{6}): ?$/, '$1'),
-                            title: '',
-                            game_id: ''
+                            title: null,
+                            game_id: null
                         };
                     } else if (currentPrediction && line.startsWith('  title: ')) {
                         currentPrediction.title = line.replace('  title: ', '').replace(/"/g, '');
@@ -1781,9 +1781,9 @@
                         currentPrediction.game_id = line.replace('  game_id: ', '').replace(/"/g, '');
                     }
                 }
-                
-                // Add the last prediction
-                if (currentPrediction) {
+
+                // Add the last prediction if it has a game_id
+                if (currentPrediction && currentPrediction.game_id) {
                     predictions.push(currentPrediction);
                 }
                 
