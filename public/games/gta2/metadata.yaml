@@ -1,0 +1,15 @@
+title: Grand Theft Auto 2
+developer: Tarantula Studios
+year: 2000
+genre: Sandbox
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-17
