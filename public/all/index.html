@@ -580,6 +580,8 @@
         <select id="sort-select" style="padding: 0.75rem 0.5rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--card-bg); color: var(--text-color); cursor: pointer;">
             <option value="alpha">Trier: Alphabétique</option>
             <option value="latest">Trier: Derniers ajouts</option>
+            <option value="year-asc">Trier: Année (croissant)</option>
+            <option value="year-desc">Trier: Année (décroissant)</option>
         </select>
         <span class="search-info" id="search-info"></span>
         <div class="filter-count" id="filter-count">1046 jeux</div>
@@ -968,6 +970,17 @@
             return t;
         }
         
+        /**
+         * Safely parse the 'year' from a game object and return a number.
+         * Returns null for missing/invalid years so they can be handled separately in sorting.
+         */
+        function getGameYear(game) {
+            if (!game || !game.year) return null;
+            const year = parseInt(game.year);
+            if (isNaN(year) || year < 1900 || year > 2030) return null;
+            return year;
+        }
+        
         function renderGames(games) {
             const container = document.getElementById('gameGrid');
             container.innerHTML = '';
@@ -1022,6 +1035,129 @@
                         
                         return bWeek - aWeek; // Descending order (latest first)
                     });
+                } else if (sortSelect && (sortSelect.value === 'year-asc' || sortSelect.value === 'year-desc')) {
+                    // Group games by year for search results
+                    const gamesByYear = {};
+                    games.forEach(game => {
+                        const year = getGameYear(game);
+                        const yearKey = year ? year.toString() : 'Sans année';
+                        
+                        if (!gamesByYear[yearKey]) {
+                            gamesByYear[yearKey] = [];
+                        }
+                        gamesByYear[yearKey].push(game);
+                    });
+                    
+                    // Sort year keys
+                    const sortedYears = Object.keys(gamesByYear).sort((a, b) => {
+                        if (a === 'Sans année') return 1; // Put "Sans année" at the end
+                        if (b === 'Sans année') return -1;
+                        
+                        const yearA = parseInt(a);
+                        const yearB = parseInt(b);
+                        
+                        if (sortSelect.value === 'year-asc') {
+                            return yearA - yearB; // Ascending order
+                        } else {
+                            return yearB - yearA; // Descending order
+                        }
+                    });
+                    
+                    // Render each year section
+                    sortedYears.forEach(yearKey => {
+                        // Create year section header
+                        const sectionHeader = document.createElement('div');
+                        sectionHeader.className = 'section-header';
+                        sectionHeader.innerHTML = `<h2>${yearKey}</h2>`;
+                        container.appendChild(sectionHeader);
+                        
+                        // Create section container with full width
+                        const sectionContainer = document.createElement('div');
+                        sectionContainer.className = 'section-games';
+                        sectionContainer.style.width = '100%';
+                        sectionContainer.style.display = 'grid';
+                        
+                        // Responsive grid template columns
+                        if (window.innerWidth <= 768) {
+                            sectionContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+                            sectionContainer.style.gap = '12px';
+                            sectionContainer.style.marginBottom = '0.3rem';
+                        } else if (window.innerWidth >= 1200) {
+                            sectionContainer.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                            sectionContainer.style.gap = '1.2rem';
+                            sectionContainer.style.marginBottom = '0.5rem';
+                        } else {
+                            sectionContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(150px, 1fr))';
+                            sectionContainer.style.gap = '1.2rem';
+                            sectionContainer.style.marginBottom = '0.5rem';
+                        }
+                        
+                        // Sort games within each year section alphabetically
+                        gamesByYear[yearKey].sort((a, b) => {
+                            let titleA = getDisplayTitle(a);
+                            let titleB = getDisplayTitle(b);
+                            
+                            // Normalize titles for sorting (move "The" to end)
+                            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                            
+                            return normalizedA.localeCompare(normalizedB);
+                        });
+                        
+                        // Render games in this year section
+                        gamesByYear[yearKey].forEach(game => {
+                            const div = document.createElement('div');
+                            div.className = 'game';
+                            div._gameData = game;
+
+                            let coverSrc = game.coverArt || '/assets/images/placeholder_thumb.png';
+
+                            // Use thumbnail version if available
+                            if (coverSrc && coverSrc !== '/assets/images/placeholder_thumb.png') {
+                                const lastDotIndex = coverSrc.lastIndexOf('.');
+                                if (lastDotIndex !== -1) {
+                                    coverSrc = coverSrc.substring(0, lastDotIndex) + '_thumb' + coverSrc.substring(lastDotIndex);
+                                }
+                            }
+
+                            // Add special border and badge if new_flag is true
+                            if (game.new_flag === 'true') {
+                                div.classList.add('game-new');
+                            }
+
+                            div.innerHTML = `
+                                <a href="${game.pageUrl}" class="game-link">
+                                    <div class="game-cover" style="position:relative;">
+                                        ${game.new_flag === 'true' ? '<span class="new-badge">NOUVEAU</span>' : ''}
+                                        <img src="${coverSrc}" alt="${game.title}">
+                                    </div>
+                                    <div class="game-title">${getDisplayTitle(game)}</div>
+                                </a>
+                            `;
+                            
+                            // Add click handler to set referrer flag and store game ID for back navigation
+                            div.querySelector('a').addEventListener('click', function(e) {
+                                sessionStorage.setItem('referrerAllGames', '1');
+                                sessionStorage.setItem('lastPlayedGame', game.id);
+                                addGameToHistory(game.id);
+                            });
+
+                            // Tooltip event listeners - only on non-mobile devices
+                            if (!isMobileDevice()) {
+                                div.addEventListener('mouseenter', (e) => {
+                                    showTooltipForItem(div);
+                                });
+                                div.addEventListener('mouseleave', (e) => {
+                                    removeTooltip();
+                                });
+                            }
+
+                            sectionContainer.appendChild(div);
+                        });
+                        
+                        container.appendChild(sectionContainer);
+                    });
+                    return;
                 } else {
                     if (sortSelect && sortSelect.value === 'latest') {
                         // Sort by added date (newest first)
@@ -1037,6 +1173,58 @@
                             if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
                             
                             // Normalize titles for sorting (move "The" to end)
+                            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                            
+                            return normalizedA.localeCompare(normalizedB);
+                        });
+                    } else if (sortSelect && sortSelect.value === 'year-asc') {
+                        // Sort by year (ascending - oldest first)
+                        games.sort((a, b) => {
+                            const yearA = getGameYear(a);
+                            const yearB = getGameYear(b);
+                            
+                            // Games with years come first
+                            if (yearA !== null && yearB === null) return -1;
+                            if (yearA === null && yearB !== null) return 1;
+                            
+                            // If both have years, sort by year
+                            if (yearA !== null && yearB !== null) {
+                                if (yearA !== yearB) return yearA - yearB;
+                            }
+                            
+                            // Fallback to alphabetical for games with same year or no year
+                            let titleA = a.title;
+                            let titleB = b.title;
+                            if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
+                            if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
+                            
+                            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                            
+                            return normalizedA.localeCompare(normalizedB);
+                        });
+                    } else if (sortSelect && sortSelect.value === 'year-desc') {
+                        // Sort by year (descending - newest first)
+                        games.sort((a, b) => {
+                            const yearA = getGameYear(a);
+                            const yearB = getGameYear(b);
+                            
+                            // Games with years come first
+                            if (yearA !== null && yearB === null) return -1;
+                            if (yearA === null && yearB !== null) return 1;
+                            
+                            // If both have years, sort by year (descending)
+                            if (yearA !== null && yearB !== null) {
+                                if (yearA !== yearB) return yearB - yearA;
+                            }
+                            
+                            // Fallback to alphabetical for games with same year or no year
+                            let titleA = a.title;
+                            let titleB = b.title;
+                            if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
+                            if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
+                            
                             const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
                             const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
                             
@@ -1113,7 +1301,7 @@
                 container.appendChild(searchGrid);
             } else {
                 // Original sectioned layout for browsing (when not searching)
-                // If sorting by latest, render a single grid of all games by added date
+                // If sorting by latest, render a single grid of all games
                 if (sortSelect && sortSelect.value === 'latest') {
                     const searchGrid = document.createElement('div');
                     searchGrid.className = 'section-games';
@@ -1134,9 +1322,37 @@
                     }
 
                     const sorted = [...games].sort((a, b) => {
-                        const ta = getAddedTimestamp(a);
-                        const tb = getAddedTimestamp(b);
-                        if (ta !== -Infinity || tb !== -Infinity) return tb - ta;
+                        if (sortSelect.value === 'latest') {
+                            const ta = getAddedTimestamp(a);
+                            const tb = getAddedTimestamp(b);
+                            if (ta !== -Infinity || tb !== -Infinity) return tb - ta;
+                        } else if (sortSelect.value === 'year-asc') {
+                            const yearA = getGameYear(a);
+                            const yearB = getGameYear(b);
+                            
+                            // Games with years come first
+                            if (yearA !== null && yearB === null) return -1;
+                            if (yearA === null && yearB !== null) return 1;
+                            
+                            // If both have years, sort by year
+                            if (yearA !== null && yearB !== null) {
+                                if (yearA !== yearB) return yearA - yearB;
+                            }
+                        } else if (sortSelect.value === 'year-desc') {
+                            const yearA = getGameYear(a);
+                            const yearB = getGameYear(b);
+                            
+                            // Games with years come first
+                            if (yearA !== null && yearB === null) return -1;
+                            if (yearA === null && yearB !== null) return 1;
+                            
+                            // If both have years, sort by year (descending)
+                            if (yearA !== null && yearB !== null) {
+                                if (yearA !== yearB) return yearB - yearA;
+                            }
+                        }
+                        
+                        // Fallback to alphabetical for all cases
                         let titleA = getDisplayTitle(a);
                         let titleB = getDisplayTitle(b);
                         // Normalize titles for sorting (move "The" to end)
@@ -1187,6 +1403,133 @@
                     container.appendChild(searchGrid);
                     return;
                 }
+                
+                // If sorting by year, group games by year
+                if (sortSelect && (sortSelect.value === 'year-asc' || sortSelect.value === 'year-desc')) {
+                    // Group games by year
+                    const gamesByYear = {};
+                    games.forEach(game => {
+                        const year = getGameYear(game);
+                        const yearKey = year ? year.toString() : 'Sans année';
+                        
+                        if (!gamesByYear[yearKey]) {
+                            gamesByYear[yearKey] = [];
+                        }
+                        gamesByYear[yearKey].push(game);
+                    });
+                    
+                    // Sort year keys
+                    const sortedYears = Object.keys(gamesByYear).sort((a, b) => {
+                        if (a === 'Sans année') return 1; // Put "Sans année" at the end
+                        if (b === 'Sans année') return -1;
+                        
+                        const yearA = parseInt(a);
+                        const yearB = parseInt(b);
+                        
+                        if (sortSelect.value === 'year-asc') {
+                            return yearA - yearB; // Ascending order
+                        } else {
+                            return yearB - yearA; // Descending order
+                        }
+                    });
+                    
+                    // Render each year section
+                    sortedYears.forEach(yearKey => {
+                        // Create year section header
+                        const sectionHeader = document.createElement('div');
+                        sectionHeader.className = 'section-header';
+                        sectionHeader.innerHTML = `<h2>${yearKey}</h2>`;
+                        container.appendChild(sectionHeader);
+                        
+                        // Create section container with full width
+                        const sectionContainer = document.createElement('div');
+                        sectionContainer.className = 'section-games';
+                        sectionContainer.style.width = '100%';
+                        sectionContainer.style.display = 'grid';
+                        
+                        // Responsive grid template columns
+                        if (window.innerWidth <= 768) {
+                            sectionContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+                            sectionContainer.style.gap = '12px';
+                            sectionContainer.style.marginBottom = '0.3rem';
+                        } else if (window.innerWidth >= 1200) {
+                            sectionContainer.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                            sectionContainer.style.gap = '1.2rem';
+                            sectionContainer.style.marginBottom = '0.5rem';
+                        } else {
+                            sectionContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(150px, 1fr))';
+                            sectionContainer.style.gap = '1.2rem';
+                            sectionContainer.style.marginBottom = '0.5rem';
+                        }
+                        
+                        // Sort games within each year section alphabetically
+                        gamesByYear[yearKey].sort((a, b) => {
+                            let titleA = getDisplayTitle(a);
+                            let titleB = getDisplayTitle(b);
+                            
+                            // Normalize titles for sorting (move "The" to end)
+                            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
+                            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
+                            
+                            return normalizedA.localeCompare(normalizedB);
+                        });
+                        
+                        // Render games in this year section
+                        gamesByYear[yearKey].forEach(game => {
+                            const div = document.createElement('div');
+                            div.className = 'game';
+                            div._gameData = game;
+
+                            let coverSrc = game.coverArt || '/assets/images/placeholder_thumb.png';
+
+                            // Use thumbnail version if available
+                            if (coverSrc && coverSrc !== '/assets/images/placeholder_thumb.png') {
+                                const lastDotIndex = coverSrc.lastIndexOf('.');
+                                if (lastDotIndex !== -1) {
+                                    coverSrc = coverSrc.substring(0, lastDotIndex) + '_thumb' + coverSrc.substring(lastDotIndex);
+                                }
+                            }
+
+                            // Add special border and badge if new_flag is true
+                            if (game.new_flag === 'true') {
+                                div.classList.add('game-new');
+                            }
+
+                            div.innerHTML = `
+                                <a href="${game.pageUrl}" class="game-link">
+                                    <div class="game-cover" style="position:relative;">
+                                        ${game.new_flag === 'true' ? '<span class="new-badge">NOUVEAU</span>' : ''}
+                                        <img src="${coverSrc}" alt="${game.title}">
+                                    </div>
+                                    <div class="game-title">${getDisplayTitle(game)}</div>
+                                </a>
+                            `;
+                            
+                            // Add click handler to set referrer flag and store game ID for back navigation
+                            div.querySelector('a').addEventListener('click', function(e) {
+                                sessionStorage.setItem('referrerAllGames', '1');
+                                sessionStorage.setItem('lastPlayedGame', game.id);
+                                addGameToHistory(game.id);
+                            });
+
+                            // Tooltip event listeners - only on non-mobile devices
+                            if (!isMobileDevice()) {
+                                div.addEventListener('mouseenter', (e) => {
+                                    showTooltipForItem(div);
+                                });
+                                div.addEventListener('mouseleave', (e) => {
+                                    removeTooltip();
+                                });
+                            }
+
+                            sectionContainer.appendChild(div);
+                        });
+                        
+                        container.appendChild(sectionContainer);
+                    });
+                    return;
+                }
+                
                 // Group games by first letter
                 const gamesByLetter = {};
                 games.forEach(game => {
