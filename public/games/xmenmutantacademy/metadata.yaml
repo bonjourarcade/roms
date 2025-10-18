@@ -1,7 +1,7 @@
-title: Kirby Tilt 'n' Tumble
-developer: Nintendo R&D2
+title: X-Men Mutant Academy
+developer: Crawfish Interactive
 year: 2000
-genre: Platform, Puzzle
+genre: Fighting
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
@@ -11,6 +11,5 @@ genre: Platform, Puzzle
 
 enable_score: true
 hide: yes
-problem: true
 
-added: 2025-10-13
+added: 2025-10-18

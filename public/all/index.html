@@ -1805,8 +1805,7 @@
                 // Use all games from the simplified structure
                 gamesData = Array.isArray(data.games) ? data.games : [];
                 
-                // Filter out games with problems
-                gamesData = gamesData.filter(game => game.problem !== "true");
+                // Include all games (including those with problems) in /all page
 
                 // Sort games alphabetically by title
                 gamesData.sort((a, b) => {

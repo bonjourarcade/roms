@@ -208,11 +208,14 @@ async function fetchGameData() {
         // Use all games for grid and randomizer (no need to combine separate arrays)
         let allGames = data.games;
 
-        // Store all games globally for filtering purposes
-        window.allGamesData = allGames;
+        // Filter out games with problems for home page search
+        let filteredGames = allGames.filter(game => game.problem !== "true");
 
-        // Sort allGames alphabetically by display title (treating "The" as suffix)
-        allGames.sort((a, b) => {
+        // Store filtered games globally for filtering purposes
+        window.allGamesData = filteredGames;
+
+        // Sort filteredGames alphabetically by display title (treating "The" as suffix)
+        filteredGames.sort((a, b) => {
             // Use the same display logic as in the UI
             let titleA = a.title;
             if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
@@ -226,7 +229,7 @@ async function fetchGameData() {
             return normalizedA.localeCompare(normalizedB);
         });
 
-        populatePreviousGames(allGames);
+        populatePreviousGames(filteredGames);
 
         // Add search input listener
         const gameIdInput = document.getElementById('game-id-input');
@@ -299,8 +302,8 @@ async function fetchGameData() {
 
         // Add randomizer button logic
         const randomBtn = document.getElementById('random-game-btn');
-        // Filter out hidden games for randomizer
-        const visibleGames = allGames.filter(game => !(game.hide === true || game.hide === 'yes'));
+        // Filter out hidden games for randomizer (using already filtered games)
+        const visibleGames = filteredGames.filter(game => !(game.hide === true || game.hide === 'yes'));
         if (randomBtn && Array.isArray(visibleGames) && visibleGames.length > 0) {
             randomBtn.onclick = () => {
                 // Get current search term to determine which games to randomize from
