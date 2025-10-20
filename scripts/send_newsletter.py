@@ -21,7 +21,7 @@ Requirements:
 - Set the corresponding environment variables for webhook URLs
 
 Usage:
-    python send_newsletter.py [--dry-run] [--mail-api-url URL] [--mail-only] [--webhook-only] [--webhook-map webhook_map.json] [--webhook-label LABEL] [--custom-message MESSAGE]
+    python send_newsletter.py [--dry-run] [--mail-api-url URL] [--mail-only] [--webhook-only] [--webhook-map webhook_map.json] [--webhook-label LABEL] [--webhook-all] [--custom-message MESSAGE]
 
 Options:
     --mail-api-url      Override the ConvertKit API URL for sending email (default: https://api.convertkit.com/v3)
@@ -29,6 +29,7 @@ Options:
     --webhook-only      Only send to webhooks (no email)
     --webhook-map       Path to JSON file mapping webhook labels to env var names
     --webhook-label     Only send to the webhook with this label from the map
+    --webhook-all       Non-interactive: select all webhooks from the map (use with --webhook-only)
     --custom-message    Override the announcement message from metadata.yaml
     --dry-run           Show what would be sent without actually sending
 """
@@ -856,6 +857,8 @@ def main():
                        help='ConvertKit API URL (for sending email/broadcasts)')
     parser.add_argument('--webhook-only', action='store_true',
                        help='Send only to webhook and skip email (for testing)')
+    parser.add_argument('--webhook-all', action='store_true',
+                      help='Non-interactive: send to all webhooks from --webhook-map (use with --webhook-only)')
     parser.add_argument('--mail-only', action='store_true',
                        help='Send only the email (no webhooks)')
     parser.add_argument('--webhook-map', default='webhook_map.json',
@@ -947,7 +950,7 @@ def main():
     
     # Interactive webhook selection if no --webhook-label is provided
     selected_webhook_labels = None
-    if args.webhook_label is None and not args.mail_only:
+    if args.webhook_label is None and not args.mail_only and not args.webhook_all:
         webhook_map_path = args.webhook_map
         if not os.path.exists(webhook_map_path):
             print(f"⚠️  Webhook map file '{webhook_map_path}' not found. Skipping webhook selection.")
@@ -973,6 +976,16 @@ def main():
                 selected_webhook_labels = selected
     elif args.webhook_label is not None:
         selected_webhook_labels = [args.webhook_label]
+    elif args.webhook_all:
+        # Non-interactive selection: use all webhooks from the map
+        webhook_map_path = args.webhook_map
+        try:
+            with open(webhook_map_path, "r") as f:
+                webhook_map = json.load(f)
+            selected_webhook_labels = list(webhook_map.keys())
+        except Exception as e:
+            print(f"⚠️  Failed to load webhook map for --webhook-all: {e}")
+            selected_webhook_labels = []
     elif args.mail_only:
         # In mail-only mode, we don't need webhook selection
         selected_webhook_labels = None
@@ -1029,13 +1042,31 @@ def main():
         if args.dry_run:
             print("🛑 DRY RUN MODE: Skipping ConvertKit email send.")
         if args.webhook_only:
-            sender.run(
-                webhook_map_path=args.webhook_map,
-                filter_label=args.webhook_label,
-                mail_only=False,
-                custom_message=custom_message,
-                week_seed=args.week_seed
-            )
+            # If --webhook-all is set with webhook-only, send to all webhooks by looping labels
+            if args.webhook_all and args.webhook_label is None:
+                try:
+                    with open(args.webhook_map, "r") as f:
+                        webhook_map = json.load(f)
+                    for label in webhook_map.keys():
+                        sender.webhook_only = True
+                        sender.run(
+                            webhook_map_path=args.webhook_map,
+                            filter_label=label,
+                            mail_only=False,
+                            custom_message=custom_message,
+                            week_seed=args.week_seed
+                        )
+                    sender.webhook_only = args.webhook_only
+                except Exception as e:
+                    print(f"⚠️  Failed to process --webhook-all in non-interactive mode: {e}")
+            else:
+                sender.run(
+                    webhook_map_path=args.webhook_map,
+                    filter_label=args.webhook_label,
+                    mail_only=False,
+                    custom_message=custom_message,
+                    week_seed=args.week_seed
+                )
         elif args.mail_only or (not args.webhook_label and not args.webhook_only):
             # Default to email only if no webhook label is specified and not webhook-only
             sender.run(

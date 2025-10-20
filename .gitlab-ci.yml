@@ -54,7 +54,7 @@ send_newsletter:
     - echo "Day of week = $(date +%A)"
     - python3 scripts/send_newsletter.py --mail-only
     - echo "Email sent successfully"
-    - python3 scripts/send_newsletter.py --webhook-only
+    - python3 scripts/send_newsletter.py --webhook-only --webhook-all
     - echo "Webhooks sent successfully"
     - echo "Newsletter automation completed"
   rules:
