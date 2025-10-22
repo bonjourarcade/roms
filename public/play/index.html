@@ -756,6 +756,15 @@
 
             // Fetch leaderboard data
             fetchLeaderboard(gameId);
+            
+            // Set up periodic refresh of leaderboard every 10 minutes
+            const scoreRefreshInterval = setInterval(() => {
+                console.log('Refreshing leaderboard scores (10-minute interval)');
+                fetchLeaderboard(gameId);
+            }, 600000); // 10 minutes = 600,000 milliseconds
+            
+            // Store interval ID for cleanup if needed
+            window.leaderboardRefreshInterval = scoreRefreshInterval;
 
             try {
                 // Step 2: Fetch the master game list
@@ -964,6 +973,14 @@
         // --- Start the loading process once the DOM is ready ---
         // Using DOMContentLoaded ensures the #game-container element exists
         document.addEventListener('DOMContentLoaded', loadSelectedGame);
+        
+        // Cleanup leaderboard refresh interval when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            if (window.leaderboardRefreshInterval) {
+                clearInterval(window.leaderboardRefreshInterval);
+                window.leaderboardRefreshInterval = null;
+            }
+        });
 
         // Initialize screensaver mode functionality
         document.addEventListener('DOMContentLoaded', initScreensaverMode);
@@ -1395,6 +1412,12 @@
             if (refreshInterval) clearInterval(parseInt(refreshInterval));
             if (countdownInterval) clearInterval(parseInt(countdownInterval));
             
+            // Clear leaderboard refresh interval if it exists
+            if (window.leaderboardRefreshInterval) {
+                clearInterval(window.leaderboardRefreshInterval);
+                window.leaderboardRefreshInterval = null;
+            }
+            
             // Clear screensaver mode
             sessionStorage.removeItem('screensaverMode');
             sessionStorage.removeItem('screensaverRefreshInterval');
@@ -1453,6 +1476,12 @@
             
             if (refreshInterval) clearInterval(parseInt(refreshInterval));
             if (countdownInterval) clearInterval(parseInt(countdownInterval));
+            
+            // Clear leaderboard refresh interval if it exists
+            if (window.leaderboardRefreshInterval) {
+                clearInterval(window.leaderboardRefreshInterval);
+                window.leaderboardRefreshInterval = null;
+            }
             
             // Remove all visual indicators (both mobile and desktop)
             const elementsToRemove = [
