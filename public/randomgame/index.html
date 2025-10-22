@@ -79,6 +79,12 @@
         .retry-btn:hover {
             background: rgba(255,255,255,0.3);
         }
+        
+        .retry-countdown {
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -92,6 +98,7 @@
         <div id="error-container" class="game-info error" style="display: none;">
             <div id="error-message"></div>
             <button class="retry-btn" onclick="retryRandomGame()">Try Again</button>
+            <div id="retry-countdown" class="retry-countdown" style="display: none;"></div>
         </div>
     </div>
 
@@ -100,6 +107,9 @@
         let currentGame = null;
         let currentGameIndex = 0;
         let isChronologicalOrder = false;
+        let retryInterval = null;
+        let countdownInterval = null;
+        let retryCount = 0;
 
         async function loadRandomGame() {
             try {
@@ -194,11 +204,17 @@
                 console.error('Error loading random game:', error);
                 document.getElementById('error-message').textContent = `Error: ${error.message}`;
                 document.getElementById('error-container').style.display = 'block';
+                
+                // Start automatic retry mechanism
+                startRetryMechanism();
             }
         }
 
         function redirectToGame() {
             if (currentGame && currentGame.id) {
+                // Stop retry mechanism before successful redirect
+                stopRetryMechanism();
+                
                 // Set screensaver mode flag if coming from screensaver
                 if (sessionStorage.getItem('screensaverMode') === 'true') {
                     sessionStorage.setItem('screensaverMode', 'true');
@@ -213,7 +229,71 @@
             }
         }
 
+        function startRetryMechanism() {
+            // Clear any existing intervals
+            if (retryInterval) {
+                clearInterval(retryInterval);
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Reset retry count
+            retryCount = 0;
+            
+            // Show countdown element
+            const countdownElement = document.getElementById('retry-countdown');
+            countdownElement.style.display = 'block';
+            
+            // Start countdown timer
+            let countdownSeconds = 60;
+            countdownInterval = setInterval(() => {
+                countdownElement.textContent = `Next retry in ${countdownSeconds} seconds...`;
+                countdownSeconds--;
+                
+                if (countdownSeconds < 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.style.display = 'none';
+                }
+            }, 1000);
+            
+            // Start retrying every minute (60,000 milliseconds) - infinite retries
+            retryInterval = setInterval(() => {
+                retryCount++;
+                console.log(`Retrying random game launch (attempt ${retryCount})`);
+                
+                // Update error message to show retry status
+                const errorMessage = document.getElementById('error-message');
+                const originalError = errorMessage.textContent.replace(/ \(Retry \d+\)/, '');
+                errorMessage.textContent = `${originalError} (Retry ${retryCount})`;
+                
+                // Try to load a random game again
+                loadRandomGame();
+            }, 60000); // 60 seconds = 60,000 milliseconds
+        }
+        
+        function stopRetryMechanism() {
+            if (retryInterval) {
+                clearInterval(retryInterval);
+                retryInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            retryCount = 0;
+            
+            // Hide countdown element
+            const countdownElement = document.getElementById('retry-countdown');
+            countdownElement.style.display = 'none';
+            
+            console.log('Retry mechanism stopped');
+        }
+        
         function retryRandomGame() {
+            // Stop automatic retries when user manually retries
+            stopRetryMechanism();
+            
             // Reset game index for chronological order if needed
             if (isChronologicalOrder) {
                 sessionStorage.removeItem('currentGameIndex');
@@ -223,6 +303,11 @@
 
         // Start loading when page loads
         document.addEventListener('DOMContentLoaded', loadRandomGame);
+        
+        // Cleanup retry mechanism when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            stopRetryMechanism();
+        });
     </script>
 </body>
 </html>
