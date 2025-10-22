@@ -1,6 +1,6 @@
 title: Puzzled
-developer: SNK
-year: 1990
+developer: Elo Interactive Media
+year: 2000
 genre: Puzzle
 #controls:
 #  - 🕹️ Déplacer
@@ -12,4 +12,4 @@ genre: Puzzle
 enable_score: true
 hide: yes
 
-added: 2025-10-22
+added: 2025-10-13
