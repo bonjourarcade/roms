@@ -2,12 +2,12 @@ title: Nibbler
 developer: Rock-Ola
 year: 1982
 genre: Puzzle, Action
-#controls:
-#  - 🕹️ Déplacer
+controls:
+  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
 #  - 2️⃣  Bombe
 
-#to_start: Insert Coin -> Start
+to_start: Insert Coin -> Start
 
 enable_score: true
 hide: yes
