@@ -321,8 +321,12 @@
         let loadingIncrementPerSecond = 0;
 
         function getConfiguredTotalSecondsFromInputs() {
-            let minutes = parseInt(document.getElementById('minutes').value) || 2;
-            let seconds = parseInt(document.getElementById('seconds').value) || 30;
+            let minutes = parseInt(document.getElementById('minutes').value);
+            let seconds = parseInt(document.getElementById('seconds').value);
+
+            // Handle NaN values (empty inputs) with defaults
+            if (isNaN(minutes)) minutes = 2;
+            if (isNaN(seconds)) seconds = 30;
 
             // Validate input ranges
             minutes = Math.max(0, Math.min(60, minutes));
@@ -348,8 +352,12 @@
 
         function launchScreensaver() {
             // Get the configured time values with validation
-            let minutes = parseInt(document.getElementById('minutes').value) || 2;
-            let seconds = parseInt(document.getElementById('seconds').value) || 30;
+            let minutes = parseInt(document.getElementById('minutes').value);
+            let seconds = parseInt(document.getElementById('seconds').value);
+
+            // Handle NaN values (empty inputs) with defaults
+            if (isNaN(minutes)) minutes = 2;
+            if (isNaN(seconds)) seconds = 30;
 
             // Validate input ranges (allow 0 minutes)
             minutes = Math.max(0, Math.min(60, minutes));
