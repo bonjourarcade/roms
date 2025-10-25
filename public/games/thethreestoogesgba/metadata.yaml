@@ -1,0 +1,15 @@
+title: The Three Stooges (GBA)
+developer: Cinemaware
+year: 2002
+genre: Action
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25
