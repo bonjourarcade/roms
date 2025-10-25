@@ -1,0 +1,15 @@
+title: TMNT
+developer: Ubisoft Montreal
+year: 2007
+genre: Hack and slash
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25

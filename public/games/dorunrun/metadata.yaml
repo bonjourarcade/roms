@@ -1,0 +1,15 @@
+title: Mr. Do! Run Run
+developer: Universal
+year: 1984
+genre: Maze
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25

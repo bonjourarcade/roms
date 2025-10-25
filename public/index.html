@@ -126,9 +126,14 @@
       */
 
 
-    // Key 'a' for directly going to /all
+    // Key 'z' for directly going to /all (but not when typing in search)
     document.addEventListener('keydown', (event) => {
         if (event.key === 'z') {
+          // Don't navigate if user is typing in the search input
+          const activeElement = document.activeElement;
+          if (activeElement && activeElement.id === 'game-id-input') {
+            return;
+          }
           window.location.replace("/all");
         }
     });

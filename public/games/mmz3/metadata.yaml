@@ -1,0 +1,15 @@
+title: Mega Man Zero 3
+developer: Inti Creates
+year: 2004
+genre: Platform, Hack and slash
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25

@@ -1,0 +1,15 @@
+title: Spider-Man 2
+developer: Digital Eclipse
+year: 2004
+genre: Actio, Adventure
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25

@@ -1,0 +1,15 @@
+title: Turbo Turtle Adventure
+developer: Iridon Interactive
+year: 2002
+genre: Puzzle
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25

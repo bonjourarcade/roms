@@ -1,0 +1,15 @@
+title: NHL All-Star Hockey '95
+developer: Sega Midwest Studio, New Wave Graphics
+year: 1995
+genre: Sports, Hockey
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25

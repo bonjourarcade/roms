@@ -1,0 +1,15 @@
+title: "Mega Man Battle Network 3: Blue Version"
+developer: Capcom Production Studio 2
+year: 2003
+genre: Role-playing, Real-time strategy
+#controls:
+#  - 🕹️ Déplacer
+#  - 1️⃣  Tirer
+#  - 2️⃣  Bombe
+
+#to_start: Insert Coin -> Start
+
+enable_score: true
+hide: yes
+
+added: 2025-10-25
