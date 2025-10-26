@@ -32,7 +32,7 @@
   game_id: ddonpach
 202521:
   title: Contra
-  game_id: contra
+  game_id: contranes
 202522:
   title: Joust
   game_id: joust
@@ -118,9 +118,11 @@
   title: "Loco-Motion"
   game_id: "locomotn"
 202550: 
+  title: Metamorphic Force
   game_id: metamrph
 202551: 
-game_id: toki
+  title: Toki
+  game_id: toki
 202552:
   title: Daze Before Christmas
   game_id: dazebeforechristmas

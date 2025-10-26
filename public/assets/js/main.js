@@ -173,6 +173,68 @@ async function fetchGameData() {
 
         // Use local gamelist.json for development, Google Cloud Storage for production
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Load predictions.yaml to get list of previous games of the week
+        let previousGotwGameIds = new Set();
+        try {
+            // Get current week in YYYYWW format
+            function getISOWeek(date) {
+                const target = new Date(date.valueOf());
+                const dayNr = (date.getDay() + 6) % 7;
+                target.setDate(target.getDate() - dayNr + 3);
+                const firstThursday = target.valueOf();
+                target.setMonth(0, 1);
+                if (target.getDay() !== 4) {
+                    target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+                }
+                const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
+                return weekNumber;
+            }
+            
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentWeek = getISOWeek(now);
+            const currentWeekSeed = currentYear * 100 + currentWeek;
+            
+            const predictionsUrl = isLocalhost ? 'plinko/predict/predictions.yaml' : 'https://storage.googleapis.com/bonjourarcade/plinko/predict/predictions.yaml';
+            const predictionsResponse = await fetch(predictionsUrl);
+            if (predictionsResponse.ok) {
+                const predictionsText = await predictionsResponse.text();
+                // Parse YAML format: YYYYWW: (week number) followed by game_id:
+                const blockPattern = /^(\d{6}):\s*$/gm;
+                let match;
+                let currentWeekInFile = null;
+                
+                while ((match = blockPattern.exec(predictionsText)) !== null) {
+                    const weekSeed = parseInt(match[1]);
+                    currentWeekInFile = weekSeed;
+                }
+                
+                // Now parse game_id lines and associate them with the week
+                const lines = predictionsText.split('\n');
+                currentWeekInFile = null;
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    const weekMatch = line.match(/^(\d{6}):\s*$/);
+                    if (weekMatch) {
+                        currentWeekInFile = parseInt(weekMatch[1]);
+                    } else if (currentWeekInFile !== null) {
+                        const gameIdMatch = line.match(/^\s*game_id:\s*(.+)$/);
+                        if (gameIdMatch) {
+                            const gameId = gameIdMatch[1].trim().replace(/^["']|["']$/g, '');
+                            // Only include if this week is in the past
+                            if (gameId && currentWeekInFile < currentWeekSeed) {
+                                previousGotwGameIds.add(gameId);
+                            }
+                        }
+                    }
+                }
+                
+                console.log(`Found ${previousGotwGameIds.size} previous games of the week (current week: ${currentWeekSeed})`);
+            }
+        } catch (error) {
+            console.warn('Could not fetch predictions.yaml:', error);
+        }
         const cacheBuster = '?v=' + Date.now();
         const gamelistUrl = isLocalhost ? 'gamelist.json' + cacheBuster : 'https://storage.googleapis.com/bonjourarcade/gamelist.json' + cacheBuster;
         const response = await fetch(gamelistUrl);
@@ -212,6 +274,13 @@ async function fetchGameData() {
         let filteredGames = allGames.filter(game => game.problem !== "true");
 
         // Store filtered games globally for filtering purposes
+        // Override hide value for previous games of the week
+        filteredGames = filteredGames.map(game => {
+            if (previousGotwGameIds.has(game.id)) {
+                return { ...game, hide: false };
+            }
+            return game;
+        });
         window.allGamesData = filteredGames;
 
         // Sort filteredGames alphabetically by display title (treating "The" as suffix)
