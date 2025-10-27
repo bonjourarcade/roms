@@ -5,6 +5,6 @@ genre: Platform
 controls:
   - 🕹️ Déplacer
   - 1️⃣  Sauter
-to_start: Insert Coin -> Start
+to_start: Select -> Start
 added: 2025-07-29
 enable_score: true

@@ -7,5 +7,5 @@ controls:
   - 🕹️ Déplacer
   - 1️⃣  Frapper
   - 2️⃣  Sauter
-to_start: Insert Coin -> Start
+to_start: Select -> Start
 enable_score: true

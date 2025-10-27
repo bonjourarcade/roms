@@ -7,7 +7,7 @@ genre: Run 'n gun, Shooter
 #  - 1️⃣  Tirer
 #  - 2️⃣  Bombe
 
-#to_start: Insert Coin -> Start
+#to_start: Select -> Start
 
 # Message d'annonce personnalisé pour la newsletter
 # Ce message apparaîtra en haut de l'email et des webhooks

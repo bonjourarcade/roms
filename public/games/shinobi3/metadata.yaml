@@ -7,7 +7,7 @@ controls:
   - 1️⃣  Ninjitsu
   - 2️⃣  Shuriken
   - 3️⃣  Sauter
-#to_start: Insert Coin -> Start
+#to_start: Select -> Start
 added: 2025-08-10
 announcement_message: "This is a test!"
 enable_score: true

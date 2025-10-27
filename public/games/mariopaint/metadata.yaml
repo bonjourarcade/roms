@@ -7,7 +7,7 @@ genre: Education
 #  - 1️⃣  Tirer
 #  - 2️⃣  Bombe
 
-#to_start: Insert Coin -> Start
+#to_start: Select -> Start
 
 enable_score: true
 hide: yes

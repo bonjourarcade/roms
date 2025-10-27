@@ -6,7 +6,7 @@ controls:
   - 🕹️ Déplacer les tuiles
   - 1️⃣  Accélérer le train
 
-to_start: Insert Coin -> Start
+to_start: Select -> Start
 
 # Message d'annonce personnalisé pour la newsletter
 # Ce message apparaîtra en haut de l'email et des webhooks

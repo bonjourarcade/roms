@@ -4,5 +4,5 @@ year: 1980
 genre: Maze
 controls:
   - 🕹️ Déplacer
-to_start: Insert Coin -> Start
+to_start: Select -> Start
 enable_score: true

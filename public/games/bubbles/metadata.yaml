@@ -4,5 +4,5 @@ year: 1982
 genre: Action
 controls:
 #  - 🕹️ Déplacer
-to_start: Insert Coin -> Start
+to_start: Select -> Start
 enable_score: true
