@@ -678,12 +678,16 @@
             const now = new Date();
             const year = now.getFullYear();
             
-            // Get the first day of the year
-            const firstDay = new Date(year, 0, 1);
-            
-            // Calculate the week number
-            const daysSinceFirstDay = Math.floor((now - firstDay) / (24 * 60 * 60 * 1000));
-            const weekNumber = Math.ceil((daysSinceFirstDay + firstDay.getDay() + 1) / 7);
+            // Calculate ISO week number
+            const target = new Date(now.valueOf());
+            const dayNr = (now.getDay() + 6) % 7;
+            target.setDate(target.getDate() - dayNr + 3);
+            const firstThursday = target.valueOf();
+            target.setMonth(0, 1);
+            if (target.getDay() !== 4) {
+                target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+            }
+            const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
             
             // Format as YYYYWW
             return year.toString() + weekNumber.toString().padStart(2, '0');
