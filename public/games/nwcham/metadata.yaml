@@ -7,7 +7,7 @@ genre: Action
 #  - 1️⃣  Tirer
 #  - 2️⃣  Bombe
 
-#to_start: Select -> Start
+to_start: Start
 
 announcement_message: 
 
