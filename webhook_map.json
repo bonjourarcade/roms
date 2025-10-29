@@ -1,8 +1,4 @@
 {
-  "test_hook": {
-    "env": "DISCORD_TEST_WEBHOOK_URL",
-    "type": "discord"
-  },
   "discord_bonjourarcade": {
     "env": "DISCORD_BONJOURARCADE_WEBHOOK_URL",
     "type": "discord"

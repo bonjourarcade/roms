@@ -709,7 +709,7 @@ Annonce du jeu de la semaine!
 {{b}}Image :{{b}} {cover_url}
 {{b}}Classements :{{b}} {leaderboard_url}
 
-🕹️ {{b}}Faites-en l'essai :{{b}} {play_url}
+{{b}}Jouez ici :{{b}} {play_url}
 {last_week_text}
 Bonne semaine ! ☀️
 """.strip()
