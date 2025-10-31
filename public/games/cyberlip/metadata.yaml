@@ -2,12 +2,13 @@ title: Cyber-Lip
 developer: SNK
 year: 1990
 genre: Shooter
-#controls:
-#  - 🕹️ Déplacer
-#  - 1️⃣  Tirer
-#  - 2️⃣  Bombe
+controls:
+  - 🕹️ Déplacer
+  - 1️⃣  Tirer
+  - 2️⃣  Sauter
+  - 3️⃣  Choix arme
 
-#to_start: Select -> Start
+to_start: Select -> Start
 
 enable_score: true
 hide: yes
