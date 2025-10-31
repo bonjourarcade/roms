@@ -887,7 +887,8 @@
             
             // Handle history filter
             if (searchType === 'history') {
-                const historyGameIds = getHistoryGameIds();
+                const gameHistory = loadGameHistory();
+                const historyGameIds = gameHistory.map(entry => entry.gameId);
                 
                 // Filter games that are in the history
                 filteredGamesData = gamesData.filter(game => {
@@ -903,11 +904,20 @@
                     return;
                 }
                 
-                // Sort by history order (most recent first)
+                // Sort by timestamp (most recent first)
                 filteredGamesData.sort((a, b) => {
-                    const aIndex = historyGameIds.indexOf(a.id);
-                    const bIndex = historyGameIds.indexOf(b.id);
-                    return aIndex - bIndex; // Ascending order (most recent first)
+                    const aEntry = gameHistory.find(entry => entry.gameId === a.id);
+                    const bEntry = gameHistory.find(entry => entry.gameId === b.id);
+                    
+                    // If entries not found, put them at the end
+                    if (!aEntry || !bEntry) {
+                        if (!aEntry && !bEntry) return 0;
+                        if (!aEntry) return 1;
+                        if (!bEntry) return -1;
+                    }
+                    
+                    // Sort by timestamp descending (most recent first)
+                    return (bEntry.timestamp || 0) - (aEntry.timestamp || 0);
                 });
                 
                 updateSearchInfo();
