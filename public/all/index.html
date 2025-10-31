@@ -585,6 +585,7 @@
         </select>
         <span class="search-info" id="search-info"></span>
         <div class="filter-count" id="filter-count">1046 jeux</div>
+        <button id="reset-filters" style="padding: 0.6rem 0.9rem; font-size: 0.95rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer;">Réinitialiser</button>
     </div>
     
     <div id="header-content" class="header-content">
@@ -610,6 +611,72 @@
         let filteredGamesData = [];
         let predictionsData = [];
         let gameHistory = [];
+        const FILTERS_STORAGE_KEY = 'bonjourarcade_all_filters_v1';
+
+        function getFiltersState() {
+            return {
+                searchType: document.getElementById('search-type').value,
+                searchInput: document.getElementById('search-input').value,
+                genre: document.getElementById('genre-select').value,
+                developer: document.getElementById('developer-select').value,
+                system: document.getElementById('system-select').value,
+                sort: document.getElementById('sort-select').value
+            };
+        }
+
+        function saveFiltersState() {
+            try {
+                localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(getFiltersState()));
+            } catch (e) { /* ignore */ }
+        }
+
+        function loadFiltersState() {
+            try {
+                const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function applySavedFilters() {
+            const state = loadFiltersState();
+            if (!state) return;
+            const searchTypeEl = document.getElementById('search-type');
+            const searchInputEl = document.getElementById('search-input');
+            const genreEl = document.getElementById('genre-select');
+            const developerEl = document.getElementById('developer-select');
+            const systemEl = document.getElementById('system-select');
+            const sortEl = document.getElementById('sort-select');
+
+            if (state.searchType) {
+                searchTypeEl.value = state.searchType;
+                // Trigger change to show correct controls and populate lists
+                searchTypeEl.dispatchEvent(new Event('change'));
+            }
+            if (state.searchType === 'title' && typeof state.searchInput === 'string') {
+                searchInputEl.value = state.searchInput;
+                filterGames(searchInputEl.value);
+            } else if (state.searchType === 'genre' && state.genre) {
+                // options already populated by change handler
+                genreEl.value = state.genre;
+                filterGames(genreEl.value);
+            } else if (state.searchType === 'developer' && state.developer) {
+                developerEl.value = state.developer;
+                filterGames(developerEl.value);
+            } else if (state.searchType === 'system' && state.system) {
+                systemEl.value = state.system;
+                filterGames(systemEl.value);
+            } else if (state.searchType === 'week' || state.searchType === 'history') {
+                filterGames('');
+            }
+            if (state.sort) {
+                sortEl.value = state.sort;
+                const current = (filteredGamesData.length > 0 || searchInputEl.value || genreEl.value || developerEl.value || systemEl.value || searchTypeEl.value === 'week')
+                    ? filteredGamesData
+                    : gamesData;
+                renderGames(current);
+            }
+            updateSearchInfo();
+        }
         
         // Function to get current week number in YYYYWW format
         function getCurrentWeek() {
@@ -1707,10 +1774,27 @@
         document.getElementById('screensaver-btn').addEventListener('click', function() {
             window.location.href = '/screensaver/';
         });
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            try { localStorage.removeItem(FILTERS_STORAGE_KEY); } catch (e) {}
+            document.getElementById('search-type').value = 'title';
+            document.getElementById('search-input').style.display = 'block';
+            document.getElementById('genre-select').style.display = 'none';
+            document.getElementById('developer-select').style.display = 'none';
+            document.getElementById('system-select').style.display = 'none';
+            document.getElementById('search-input').value = '';
+            document.getElementById('genre-select').value = '';
+            document.getElementById('developer-select').value = '';
+            document.getElementById('system-select').value = '';
+            document.getElementById('sort-select').value = 'alpha';
+            filteredGamesData = gamesData;
+            renderGames(gamesData);
+            updateSearchInfo();
+        });
         
         // Search input event listener
         document.getElementById('search-input').addEventListener('input', (e) => {
             filterGames(e.target.value);
+            saveFiltersState();
         });
         
         // Search type dropdown event listener
@@ -1871,6 +1955,7 @@
             
             // Clear any existing search results
             filterGames('');
+            saveFiltersState();
         });
         
         // Genre select event listener
@@ -1880,6 +1965,7 @@
                 document.getElementById('search-type').value = 'genre';
             }
             filterGames(e.target.value);
+            saveFiltersState();
         });
 
         // Developer select event listener
@@ -1889,6 +1975,7 @@
                 document.getElementById('search-type').value = 'developer';
             }
             filterGames(e.target.value);
+            saveFiltersState();
         });
 
         // System select event listener
@@ -1898,6 +1985,7 @@
                 document.getElementById('search-type').value = 'system';
             }
             filterGames(e.target.value);
+            saveFiltersState();
         });
 
         // Sort select event listener
@@ -1906,6 +1994,7 @@
                 ? filteredGamesData
                 : gamesData;
             renderGames(current);
+            saveFiltersState();
         });
 
 
@@ -2163,6 +2252,9 @@
                 
                 // Update filter count with initial count
                 updateSearchInfo();
+
+                // Apply saved filters from previous visit
+                applySavedFilters();
             })
             .catch(err => {
                 console.error('Error loading games.json:', err);
