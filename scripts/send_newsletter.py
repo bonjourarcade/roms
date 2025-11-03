@@ -687,7 +687,7 @@ class NewsletterSender:
                 scores_list += f"{medal} {score['player']}: {score['score']:,} points\n"
             
             last_week_text = f"""
-Top scores de la semaine dernière sur {last_week_highlight['game_title']} :
+Top scores de la semaine dernière sur {{b}}{last_week_highlight['game_title']}{{b}} :
 {scores_list}"""
         
         # Get announcement message from metadata, fallback to custom_message if provided
