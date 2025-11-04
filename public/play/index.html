@@ -205,6 +205,7 @@
             font-family: sans-serif;
             font-size: 11px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
         }
         
         /* Mobile leaderboard popup styling */
@@ -258,6 +259,7 @@
             text-align: center;
             color: #ffd700;
             padding-right: 30px;
+            cursor: pointer;
         }
         
         .mobile-leaderboard-entry {
@@ -678,6 +680,17 @@
 
                     leaderboardContent.innerHTML = leaderboardHTML;
                     
+                    // Define leaderboard URL for click handlers
+                    const leaderboardUrl = `https://alloarcade.web.app/leaderboards/${gameId}`;
+                    
+                    // Add click handler to desktop leaderboard container (only once)
+                    if (!leaderboardContainer.dataset.clickHandlerAdded) {
+                        leaderboardContainer.addEventListener('click', () => {
+                            window.open(leaderboardUrl, '_blank');
+                        });
+                        leaderboardContainer.dataset.clickHandlerAdded = 'true';
+                    }
+                    
                     // Show leaderboard container on desktop, popup on mobile (but not in screensaver mode)
                     if (!isMobileDevice()) {
                         leaderboardContainer.style.display = 'flex';
@@ -705,6 +718,15 @@
                                 });
                                 mobileContent.innerHTML = mobileLeaderboardHTML;
                                 mobilePopup.style.display = 'flex';
+                                
+                                // Add click handler to mobile leaderboard title (only once)
+                                const mobileLeaderboardTitle = document.querySelector('#mobile-leaderboard-content h3');
+                                if (mobileLeaderboardTitle && !mobileLeaderboardTitle.dataset.clickHandlerAdded) {
+                                    mobileLeaderboardTitle.addEventListener('click', () => {
+                                        window.open(leaderboardUrl, '_blank');
+                                    });
+                                    mobileLeaderboardTitle.dataset.clickHandlerAdded = 'true';
+                                }
                             }
                         }
                     }
