@@ -1,7 +1,7 @@
-title: 
-developer: 
-year: 
-genre: 
+title: Super Tetris 2 + Bombliss
+developer: Tose, Bullet-Proof Software
+year: 1992
+genre: Puzzle
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
@@ -14,4 +14,4 @@ genre:
 enable_score: true
 hide: yes
 
-added: DATE_PLACEHOLDER
+added: 2025-11-04

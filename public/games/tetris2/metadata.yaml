@@ -1,17 +1,15 @@
-title: 
-developer: 
-year: 
-genre: 
+title: Tetris 2
+developer: Tose, Nintendo R&D1
+year: 1993
+genre: Puzzle
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
 #  - 2️⃣  Bombe
-#  - 3️⃣ ...
-#  - 4️⃣ ...
 
 #to_start: Select -> Start
 
 enable_score: true
 hide: yes
 
-added: DATE_PLACEHOLDER
+added: 2025-11-04

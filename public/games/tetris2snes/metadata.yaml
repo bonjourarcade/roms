@@ -1,7 +1,7 @@
-title: 
-developer: 
-year: 
-genre: 
+title: Tetris 2 (SNES)
+developer: Tose, Nintendo R&D1
+year: 1994
+genre: Puzzle
 #controls:
 #  - 🕹️ Déplacer
 #  - 1️⃣  Tirer
@@ -14,4 +14,4 @@ genre:
 enable_score: true
 hide: yes
 
-added: DATE_PLACEHOLDER
+added: 2025-11-04
