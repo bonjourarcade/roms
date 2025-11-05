@@ -37,8 +37,8 @@ def seed_to_date(seed):
         print(f"Error: Could not convert seed {seed} to date: {e}", file=sys.stderr)
         return None
 
-def is_game_in_predictions(game_title):
-    """Check if a game title exists in predictions.yaml and return its status."""
+def is_game_in_predictions(game_id):
+    """Check if a game_id exists in predictions.yaml and return its status."""
     try:
         # Read the predictions.yaml file
         predictions_path = 'public/plinko/predict/predictions.yaml'
@@ -51,12 +51,30 @@ def is_game_in_predictions(game_title):
         if not predictions:
             return None
         
-        # Look for the game title in predictions
-        for seed, title in predictions.items():
-            if title == game_title:
+        # Look for the game_id in predictions
+        # Predictions can be in two formats:
+        # 1. Old format: {seed: "title"}
+        # 2. New format: {seed: {title: "...", game_id: "..."}}
+        for seed, game_data in predictions.items():
+            game_id_in_prediction = None
+            title_in_prediction = None
+            
+            if isinstance(game_data, dict):
+                # New format with game_id and title
+                game_id_in_prediction = game_data.get('game_id')
+                title_in_prediction = game_data.get('title')
+            elif isinstance(game_data, str):
+                # Old format - just title, no game_id
+                title_in_prediction = game_data
+                # In old format, we can't match by game_id, so skip
+                continue
+            
+            # Check if game_id matches
+            if game_id_in_prediction and game_id_in_prediction == game_id:
                 return {
                     'seed': seed,
-                    'title': title,
+                    'title': title_in_prediction,
+                    'game_id': game_id_in_prediction,
                     'is_current_week': False,
                     'is_past_week': False
                 }
@@ -97,14 +115,14 @@ def check_week_status(seed):
 def main():
     """Main function to check game prediction status."""
     if len(sys.argv) != 2:
-        print("Usage: python3 check_predictions_status.py <game_title>", file=sys.stderr)
+        print("Usage: python3 check_predictions_status.py <game_id>", file=sys.stderr)
         sys.exit(1)
     
-    game_title = sys.argv[1]
+    game_id = sys.argv[1]
     
     try:
         # Check if game is in predictions
-        prediction_info = is_game_in_predictions(game_title)
+        prediction_info = is_game_in_predictions(game_id)
         
         if prediction_info is None:
             # Game not in predictions
@@ -129,7 +147,9 @@ def main():
         prediction_date = seed_to_date(prediction_info['seed'])
         
         # Output result as JSON-like format for shell script parsing
-        if prediction_info['is_current_week'] or prediction_info['is_past_week']:
+        # Only show games that are in past weeks (previous games of the week)
+        # Current week games are handled separately and should not override hide setting
+        if prediction_info['is_past_week']:
             print(f"SHOW_GAME|{prediction_date}")
         else:
             print("HIDE_GAME")
