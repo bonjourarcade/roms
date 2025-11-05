@@ -104,11 +104,20 @@ if [ -n "$ROMS_MANIFEST_URL" ]; then
     ROM_FILES=$(cat "$TEMP_MANIFEST" | grep -v "/bios/" | sort)
 elif [ -n "$ROMS_MANIFEST_PATH" ] && [ -f "$ROMS_MANIFEST_PATH" ]; then
     echo -e "${BLUE}📄 Using local manifest file: $ROMS_MANIFEST_PATH${NC}"
-    ROM_FILES=$(cat "$ROMS_MANIFEST_PATH" | grep -v "/bios/" | sort)
+    ROM_FILES=$(cat "$ROMS_MANIFEST_PATH" \
+        | grep -v "/bios/" \
+        | grep -viE '(^|/)(README|upload-files)(\.|$)' \
+        | grep -viE '\\.(md|markdown|txt|sh|bash|zsh|ps1|bat)$' \
+        | sort)
 else
     # Fallback to scanning local filesystem
     echo -e "${BLUE}🗂️  Scanning roms directory: $ROMS_DIR${NC}"
-    ROM_FILES=$(find -L "$ROMS_DIR" -maxdepth 2 -type f -not -path "*/\.*" | grep -v "/bios/" | sed "s#^$ROMS_DIR/##" | sort)
+    ROM_FILES=$(find -L "$ROMS_DIR" -maxdepth 2 -type f -not -path "*/\.*" \
+        | grep -v "/bios/" \
+        | grep -viE '(^|/)(README|upload-files)(\.|$)' \
+        | grep -viE '\\.(md|markdown|txt|sh|bash|zsh|ps1|bat)$' \
+        | sed "s#^$ROMS_DIR/##" \
+        | sort)
 fi
 TOTAL_FILES=$(echo "$ROM_FILES" | wc -l)
 
@@ -192,6 +201,14 @@ for i in $(seq 1 $BATCH_WORKERS); do
                             rom_filename=$(basename "$rom_entry")
                         fi
                         game_id=$(echo "$rom_filename" | sed 's/\.[^.]*$//')
+                        
+                        # Skip non-ROM helper files (README, upload scripts, and common text/script extensions)
+                        if echo "$rom_filename" | grep -qiE '^(README|upload-files)(\.|$)'; then
+                            exit 0
+                        fi
+                        if echo "$rom_filename" | grep -qiE '\\.(md|markdown|txt|sh|bash|zsh|ps1|bat)$'; then
+                            exit 0
+                        fi
                         
                         # Skip BIOS files
                         if [ "$rom_subdir" = "bios" ]; then

@@ -578,6 +578,7 @@
             <option value="">Sélectionner un système...</option>
         </select>
         <select id="sort-select" style="padding: 0.75rem 0.5rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--card-bg); color: var(--text-color); cursor: pointer;">
+            <option value="random">Trier: Aléatoire</option>
             <option value="alpha">Trier: Alphabétique</option>
             <option value="latest">Trier: Derniers ajouts</option>
             <option value="year-asc">Trier: Année (croissant)</option>
@@ -1058,6 +1059,14 @@
             return year;
         }
         
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
         function renderGames(games) {
             const container = document.getElementById('gameGrid');
             container.innerHTML = '';
@@ -1281,7 +1290,7 @@
                             
                             return normalizedA.localeCompare(normalizedB);
                         });
-                    } else if (sortSelect && sortSelect.value === 'year-desc') {
+                } else if (sortSelect && sortSelect.value === 'year-desc') {
                         // Sort by year (descending - newest first)
                         games.sort((a, b) => {
                             const yearA = getGameYear(a);
@@ -1307,6 +1316,9 @@
                             
                             return normalizedA.localeCompare(normalizedB);
                         });
+                    } else if (sortSelect && sortSelect.value === 'random') {
+                        // Random order for search results
+                        shuffleArray(games);
                     } else {
                         // Default alphabetical (treating "The" as suffix)
                         games.sort((a, b) => {
@@ -1378,8 +1390,71 @@
                 container.appendChild(searchGrid);
             } else {
                 // Original sectioned layout for browsing (when not searching)
-                // If sorting by latest, render a single grid of all games
-                if (sortSelect && sortSelect.value === 'latest') {
+                // If sorting by random or latest, render a single grid of all games
+                if (sortSelect && sortSelect.value === 'random') {
+                    const searchGrid = document.createElement('div');
+                    searchGrid.className = 'section-games';
+                    searchGrid.style.width = '100%';
+                    searchGrid.style.display = 'grid';
+                    if (window.innerWidth <= 768) {
+                        searchGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+                        searchGrid.style.gap = '12px';
+                        searchGrid.style.marginBottom = '0.3rem';
+                    } else if (window.innerWidth >= 1200) {
+                        searchGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                        searchGrid.style.gap = '1.2rem';
+                        searchGrid.style.marginBottom = '0.5rem';
+                    } else {
+                        searchGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(150px, 1fr))';
+                        searchGrid.style.gap = '1.2rem';
+                        searchGrid.style.marginBottom = '0.5rem';
+                    }
+
+                    const shuffled = [...games];
+                    shuffleArray(shuffled);
+
+                    shuffled.forEach(game => {
+                        const div = document.createElement('div');
+                        div.className = 'game';
+                        div._gameData = game;
+                        let coverSrc = game.coverArt || '/assets/images/placeholder_thumb.png';
+                        if (coverSrc && coverSrc !== '/assets/images/placeholder_thumb.png') {
+                            const lastDotIndex = coverSrc.lastIndexOf('.');
+                            if (lastDotIndex !== -1) {
+                                coverSrc = coverSrc.substring(0, lastDotIndex) + '_thumb' + coverSrc.substring(lastDotIndex);
+                            }
+                        }
+                        if (game.new_flag === 'true') {
+                            div.classList.add('game-new');
+                        }
+                        div.innerHTML = `
+                            <a href="${game.pageUrl}" class="game-link">
+                                <div class="game-cover" style="position:relative;">
+                                    ${game.new_flag === 'true' ? '<span class="new-badge">NOUVEAU</span>' : ''}
+                                    <img src="${coverSrc}" alt="${game.title}">
+                                </div>
+                                <div class="game-title">${getDisplayTitle(game)}</div>
+                            </a>
+                        `;
+                        div.querySelector('a').addEventListener('click', function(e) {
+                            sessionStorage.setItem('referrerAllGames', '1');
+                            sessionStorage.setItem('lastPlayedGame', game.id);
+                            addGameToHistory(game.id);
+                        });
+                        if (!isMobileDevice()) {
+                            div.addEventListener('mouseenter', (e) => {
+                                showTooltipForItem(div);
+                            });
+                            div.addEventListener('mouseleave', (e) => {
+                                removeTooltip();
+                            });
+                        }
+                        searchGrid.appendChild(div);
+                    });
+
+                    container.appendChild(searchGrid);
+                    return;
+                } else if (sortSelect && sortSelect.value === 'latest') {
                     const searchGrid = document.createElement('div');
                     searchGrid.className = 'section-games';
                     searchGrid.style.width = '100%';
@@ -1795,7 +1870,7 @@
             document.getElementById('genre-select').value = '';
             document.getElementById('developer-select').value = '';
             document.getElementById('system-select').value = '';
-            document.getElementById('sort-select').value = 'alpha';
+            document.getElementById('sort-select').value = 'random';
             filteredGamesData = gamesData;
             renderGames(gamesData);
             updateSearchInfo();
@@ -2249,10 +2324,8 @@
                 
                 // Include all games (including those with problems) in /all page
 
-                // Sort games alphabetically by title
-                gamesData.sort((a, b) => {
-                    return a.title.localeCompare(b.title);
-                });
+                // Default to random order by title
+                shuffleArray(gamesData);
                 
                 // Initialize filtered games with all games
                 filteredGamesData = gamesData;
