@@ -12,10 +12,11 @@ Requirements:
 - requests library: pip install requests
 
 Usage:
-    python generate_announcement.py [--week-seed YYYYWW] [--ai-service openai|claude] [--update-metadata] [--dry-run]
+    python generate_announcement.py [--week-seed YYYYWW] [--next-week] [--ai-service openai|claude] [--update-metadata] [--dry-run]
 
 Options:
     --week-seed         Specific week seed (YYYYWW format) to use instead of current week
+    --next-week         Use next week's seed instead of current week (useful when you don't know the current week number)
     --ai-service        AI service to use: 'openai' or 'claude' (default: openai)
     --update-metadata   Automatically update the metadata.yaml file with the generated announcement
     --dry-run           Show what would be generated without actually updating files
@@ -26,7 +27,7 @@ import requests
 import argparse
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import yaml
 import re
@@ -66,6 +67,14 @@ class AnnouncementGenerator:
         now = datetime.now()
         week = now.isocalendar()[1]
         return f"{now.year}{week:02d}"
+
+    def get_next_week_seed(self):
+        """Get next week's seed in YYYYWW format."""
+        now = datetime.now()
+        # Add 7 days to get next week
+        next_week = now + timedelta(days=7)
+        week = next_week.isocalendar()[1]
+        return f"{next_week.year}{week:02d}"
 
     def get_game_from_seed(self, seed):
         """Get the game title that would be selected for a given seed using the predictions.yaml file."""
@@ -338,12 +347,15 @@ Génère maintenant l'annonce pour {game_title} :"""
             print(f"❌ Error updating metadata file: {e}")
             return False
 
-    def run(self, week_seed=None, update_metadata=False):
+    def run(self, week_seed=None, next_week=False, update_metadata=False):
         """Run the announcement generation process."""
         print('🤖 Starting AI-powered announcement generation...')
         
         # Determine week seed
-        if week_seed:
+        if next_week:
+            seed = self.get_next_week_seed()
+            print(f"🎯 Using next week seed: {seed}")
+        elif week_seed:
             seed = week_seed
             print(f"🎯 Using specified week seed: {seed}")
         else:
@@ -456,6 +468,8 @@ def main():
     parser = argparse.ArgumentParser(description='Generate AI-powered announcement messages for BonjourArcade games')
     parser.add_argument('--week-seed', default=None, type=str,
                        help='Specific week seed (YYYYWW format) to use instead of current week')
+    parser.add_argument('--next-week', action='store_true',
+                       help='Use next week\'s seed instead of current week (useful when you don\'t know the current week number)')
     parser.add_argument('--ai-service', default=DEFAULT_AI_SERVICE, choices=['openai', 'claude'],
                        help='AI service to use (default: openai)')
     parser.add_argument('--update-metadata', action='store_true',
@@ -464,6 +478,11 @@ def main():
                        help='Show what would be generated without actually calling AI or updating files')
     
     args = parser.parse_args()
+    
+    # Validate that --week-seed and --next-week are not both specified
+    if args.week_seed and args.next_week:
+        print('❌ Error: Cannot specify both --week-seed and --next-week. Use one or the other.')
+        sys.exit(1)
     
     # Validate AI service and API keys (only if not in dry-run mode)
     if not args.dry_run:
@@ -483,6 +502,7 @@ def main():
     
     generator.run(
         week_seed=args.week_seed,
+        next_week=args.next_week,
         update_metadata=args.update_metadata
     )
 
