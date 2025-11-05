@@ -281,22 +281,22 @@ async function fetchGameData() {
             }
             return game;
         });
-        window.allGamesData = filteredGames;
+        
+        // Shuffle games array to randomize order
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
-        // Sort filteredGames alphabetically by display title (treating "The" as suffix)
-        filteredGames.sort((a, b) => {
-            // Use the same display logic as in the UI
-            let titleA = a.title;
-            if (!titleA || titleA === a.id) titleA = capitalizeFirst(a.id);
-            let titleB = b.title;
-            if (!titleB || titleB === b.id) titleB = capitalizeFirst(b.id);
-            
-            // Normalize titles for sorting (move "The" to end)
-            const normalizedA = normalizeTitleForSorting(titleA).toLowerCase();
-            const normalizedB = normalizeTitleForSorting(titleB).toLowerCase();
-            
-            return normalizedA.localeCompare(normalizedB);
-        });
+        // Randomize the order of games
+        filteredGames = shuffleArray(filteredGames);
+        
+        // Store shuffled games globally for search/clear functionality
+        window.allGamesData = filteredGames;
 
         populatePreviousGames(filteredGames);
 
