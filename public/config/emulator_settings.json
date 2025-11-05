@@ -15,5 +15,5 @@
   "EJS_AdUrl": "/ads",
   "EJS_AdTimer": 4000,
   "EJS_AdSize": ["400px", "262px"],
-  "EJS_AdMode": 1
+  "EJS_AdMode": 0
 }
